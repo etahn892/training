@@ -174,9 +174,16 @@ nav svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;st
   <div id="logresult"></div>
   <textarea id="paste" placeholder="Hack squat 135x12, 185x12, 215x12&#10;Leg extension 100x12 100x12 140x12 145x10"></textarea>
   <div class="row" style="margin-top:10px">
-    <input type="date" id="pastedate" style="flex:1;min-width:150px">
-    <button class="btn go" id="pastego" style="flex:1;min-width:150px">Add session</button>
+    <input type="date" id="pastedate" style="flex:1;min-width:140px">
+    <select id="pasteday" style="flex:1;min-width:140px">
+      <option value="">Day type…</option>
+      <option value="push">Push</option>
+      <option value="pull">Pull</option>
+      <option value="legs">Legs</option>
+      <option value="upper">Upper</option>
+    </select>
   </div>
+  <button class="btn go wide" id="pastego">Check session</button>
   <h2>Files</h2>
   <div id="imports"></div>
   <button class="btn wide" id="backup">Save a backup file</button>
@@ -404,10 +411,21 @@ function ingestStrava(text){
 
 /* ================= raw pasted session ================= */
 const nkey=s=>(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+/* equipment tags only — "(Assisted)" is part of the movement identity and stays */
+const EQUIP=/\s*\((dumbbell|dumbbells|cable|cables|machine|barbell|smith machine|machine plates|pec deck|bodyweight|band)\)\s*$/i;
+const stripEquip=s=>(s||'').replace(EQUIP,'').trim();
 function resolveMovement(label){
   const k=nkey(label); if(!k) return null;
   for(const ex in SEED){ if(nkey(ex)===k||nkey(SEED[ex][0])===k) return ex }
   for(const ex in UMAP){ if(nkey(ex)===k||nkey(UMAP[ex].name||'')===k) return ex }
+  /* equipment-stripped match, but only when exactly one movement survives */
+  const sk=nkey(stripEquip(label));
+  if(sk&&sk!==k){
+    const hits=[...new Set(Object.keys(SEED).filter(ex=>
+      nkey(stripEquip(ex))===sk||nkey(stripEquip(SEED[ex][0]))===sk))];
+    if(hits.length===1) return hits[0];
+    if(hits.length>1) return null;
+  }
   /* token-overlap fallback, needs a clear winner */
   const t=k.split(' ').filter(w=>w.length>2);
   let best=null,bs=0,tie=false;
@@ -418,6 +436,78 @@ function resolveMovement(label){
     if(s>bs){bs=s;best=ex;tie=false} else if(s===bs&&s>0) tie=true;
   }
   return (bs>=0.75&&!tie)?best:null;
+}
+/* ---- Hevy share format ----
+   Morning workout / Sunday, Sep 13, 2026 at 3:25pm / blank /
+   Exercise name / "my note" / Set 1: 90 lbs x 10 ...  cut at @hevyapp */
+function parseShareDate(line){
+  if(!line) return null;
+  const t=line.replace(/^\s*[A-Za-z]+day\s*,\s*/,'')   /* drop weekday */
+              .replace(/\s+at\s+/i,', ')
+              .replace(/(\d)(am|pm)\b/i,'$1 $2');
+  return parseDate(t);
+}
+const SETLINE=/^set\s*\d+\s*:\s*(.+)$/i;
+const QUOTED=/^["\u201c\u2018'](.+)["\u201d\u2019']$/;
+function parseSetBody(body){
+  let m=body.match(/(-?\d+(?:\.\d+)?)\s*(lbs?|kgs?)?\s*[x\u00d7]\s*(\d+)/i);
+  if(m){
+    let w=parseFloat(m[1]);
+    if(/^kg/i.test(m[2]||'')) w=Math.round(w*2.20462*100)/100;
+    return {w, reps:parseInt(m[3],10)};
+  }
+  m=body.match(/(\d+)\s*reps?\b/i);
+  if(m) return {w:null, reps:parseInt(m[1],10)};
+  return null;
+}
+function parseHevyShare(text,dateStr){
+  const cut=text.split(/^[ \t]*@hevyapp\b.*$/mi)[0];
+  const lines=cut.split(/\r?\n/).map(l=>l.trim());
+  if(!lines.some(l=>SETLINE.test(l))) return null;   /* not the share format */
+  let i=0, title='', when=null;
+  const nonEmpty=lines.map((l,ix)=>({l,ix})).filter(o=>o.l);
+  if(nonEmpty.length>=2 && !SETLINE.test(nonEmpty[0].l)){
+    const d=parseShareDate(nonEmpty[1].l);
+    if(d){ title=nonEmpty[0].l; when=d; i=nonEmpty[1].ix+1; }
+  }
+  let base=when||parseDate(dateStr)||new Date();
+  if(!when) base.setHours(12,0,0,0);
+  const ts=base.getTime();
+  const out=[], skipped=[], exs=[];
+  let pending=null, pendingNote='', cur=null, eo=0;
+  for(;i<lines.length;i++){
+    const line=lines[i]; if(!line) continue;
+    const sm=line.match(SETLINE);
+    if(sm){
+      if(pending){                                   /* first set commits the name */
+        const ex=resolveMovement(pending);
+        if(!ex){ skipped.push(pending+' — name not recognised'); pending=null; pendingNote=''; cur=null; continue }
+        cur={ex, label:pending, note:pendingNote, n:0, eo:eo++, assisted:/\(assisted\)/i.test(pending)};
+        exs.push(cur); pending=null; pendingNote='';
+      }
+      if(!cur){ skipped.push(line+' — set with no exercise above it'); continue }
+      const v=parseSetBody(sm[1]);
+      if(!v){ skipped.push(line+' — could not read weight or reps'); continue }
+      /* Hevy writes assistance as positive; the file convention is negative */
+      const w=v.w==null?null:(cur.assisted?-Math.abs(v.w):v.w);
+      out.push({id:ts+'|'+cur.ex+'|'+cur.n+'|0', ts, ex:cur.ex, eo:cur.eo, title:title||'Pasted',
+        idx:cur.n, type:'normal', w, reps:v.reps, dist:null, dur:null, note:cur.note});
+      cur.n++;
+      continue;
+    }
+    const q=line.match(QUOTED);
+    if(q){                                            /* my note on the exercise above */
+      if(pending) pendingNote=q[1];
+      else if(cur){ cur.note=q[1]; out.forEach(r=>{ if(r.ex===cur.ex&&r.eo===cur.eo) r.note=q[1] }) }
+      else skipped.push(line+' — note with no exercise');
+      continue;
+    }
+    if(pending) skipped.push(pending+' — no sets under it');
+    pending=line; pendingNote=''; cur=null;
+  }
+  if(pending) skipped.push(pending+' — no sets under it');
+  return {rows:out, skipped, ts, title, dateFrom:when?'paste':'picker',
+          exercises:exs.map(e=>({name:movementName(e.ex), ex:e.ex, sets:e.n, note:e.note, assisted:e.assisted}))};
 }
 function parseRawSession(text,dateStr){
   const base=parseDate(dateStr)||new Date();
@@ -441,7 +531,13 @@ function parseRawSession(text,dateStr){
       w:s.w==null?null:Math.abs(s.w), reps:s.reps, dist:null, dur:null, note:'pasted' }));
     eo++;
   }
-  return {rows:out, unknown:[...new Set(unknown)], ts};
+  const exs=[...new Set(out.map(r=>r.ex))].map(ex=>({name:movementName(ex),ex,
+    sets:out.filter(r=>r.ex===ex).length, note:'', assisted:isAssisted(ex)}));
+  return {rows:out, skipped:[...new Set(unknown)].map(u=>u+' — name not recognised'),
+          ts, title:'', dateFrom:'picker', exercises:exs};
+}
+function parseSession(text,dateStr){
+  return parseHevyShare(text,dateStr) || parseRawSession(text,dateStr);
 }
 
 /* ================= training-state.md ================= */
@@ -576,6 +672,7 @@ function sessions(){
     const c={push:0,pull:0,legs:0};
     for(const r of lift){const k=catOf(r.ex); if(c[k]!==undefined)c[k]++;}
     const n=c.push+c.pull+c.legs;
+    const stated=rows.find(r=>r.lab); if(stated) return {ts,rows,label:stated.lab,n};
     let label=null;
     if(n){
       if(c.legs/n>0.6) label='legs';
@@ -884,6 +981,8 @@ function renderLog(){
     dropHTML('strava','Strava activities.csv','Runs only. Never touches leg rotation.',
       RUNS.length?'<span class="ok">'+RUNS.length+' runs</span>':'Nothing stored');
   wireDrops();
+  const dy=document.getElementById('pasteday');
+  if(dy&&!DAYTOUCHED&&SETS.length) dy.value=biggestGap()||'';
   document.getElementById('stats').textContent =
     SETS.length? sessions().length+' sessions on this device. Nothing is uploaded.' : '';
   renderResult();
@@ -898,6 +997,8 @@ function renderResult(){
   const box=document.getElementById('logresult');
   if(!LASTRESULT){ box.innerHTML=''; return }
   const R=LASTRESULT; let h='<h2>'+fmtD(R.ts)+' · '+R.count+' movements</h2>';
+  if(R.notes&&R.notes.length) h+=R.notes.map(n=>
+    '<div class="res"><div class="h">'+esc(n.name)+'</div><div class="b" style="color:var(--warn)">"'+esc(n.note)+'"</div></div>').join('');
   if(!R.down.length&&!R.crash.length) h+='<div class="res"><div class="h">Nothing regressed.</div></div>';
   for(const d of R.down)
     h+='<div class="res down"><div class="h">'+esc(d.name)+' down '+(d.d?Math.abs(d.d)+' lb':Math.abs(d.dr)+' reps')+'</div>'+
@@ -1079,26 +1180,66 @@ function wireDrops(){
     d.addEventListener('drop',e=>{const f=e.dataTransfer.files[0]; if(f) handleFile(f,kind)});
   });
 }
-async function addPasted(){
-  const ta=document.getElementById('paste'), dt=document.getElementById('pastedate');
-  const box=document.getElementById('logresult');
+let PENDING=null, DAYTOUCHED=false;
+function biggestGap(){
+  const rot=rotation(); let best=null,bd=-1;
+  for(const k of ['push','pull','legs','upper']){
+    const d=rot[k].days==null?9999:rot[k].days;
+    if(d>bd){bd=d;best=k}
+  }
+  return best;
+}
+function checkPasted(){
+  const ta=document.getElementById('paste'), dt=document.getElementById('pastedate'),
+        dy=document.getElementById('pasteday'), box=document.getElementById('logresult');
   if(!ta.value.trim()) return;
-  const {rows,unknown,ts}=parseRawSession(ta.value,dt.value);
-  if(!rows.length){
+  if(!dy.value){
+    box.innerHTML='<div class="res down"><div class="h">Pick a day type first</div>'+
+      '<div class="b">Push, pull, legs or upper. It sets the rotation counter.</div></div>';
+    dy.focus(); return;
+  }
+  const P=parseSession(ta.value,dt.value);
+  PENDING=P?{...P,lab:dy.value}:null;
+  renderPreview();
+}
+function renderPreview(){
+  const box=document.getElementById('logresult');
+  if(!PENDING||!PENDING.rows.length){
     box.innerHTML='<div class="res down"><div class="h">Nothing parsed</div><div class="b">'+
-      (unknown.length?'Unrecognised: '+unknown.map(esc).join(', '):'Expected lines like  Hack squat 135x12, 185x12')+'</div></div>';
-    return;
+      ((PENDING&&PENDING.skipped.length)?PENDING.skipped.map(esc).join('<br>')
+        :'Expected Hevy share text, or lines like  Hack squat 135x12, 185x12')+'</div></div>';
+    PENDING=null; return;
   }
+  const P=PENDING;
+  let h='<h2>Check before adding</h2>'+
+    '<div class="res"><div class="h">'+P.exercises.length+' exercises · '+P.rows.length+' sets</div>'+
+    '<div class="b">'+fmtD(P.ts)+' ('+(P.dateFrom==='paste'?'from the paste':'from the picker')+')'+
+    ' · '+P.lab+'</div></div>';
+  for(const e of P.exercises){
+    const rows=P.rows.filter(r=>r.ex===e.ex);
+    h+='<div class="res"><div class="h">'+esc(e.name)+(e.assisted?' <span class="pill">assist, stored negative</span>':'')+'</div>'+
+       '<div class="b">'+rows.map(r=>showW(r.ex,r.w)+'×'+r.reps).join('  ')+'</div>'+
+       (e.note?'<div class="b" style="color:var(--warn)">"'+esc(e.note)+'"</div>':'')+'</div>';
+  }
+  if(P.skipped.length)
+    h+='<div class="res down"><div class="h">Skipped '+P.skipped.length+'</div><div class="b">'+
+       P.skipped.map(esc).join('<br>')+'</div></div>';
+  h+='<button class="btn go wide" id="commit">Add session</button>'+
+     '<button class="btn wide" id="cancelp">Cancel</button>';
+  box.innerHTML=h;
+  document.getElementById('commit').onclick=commitPasted;
+  document.getElementById('cancelp').onclick=()=>{PENDING=null; renderResult()};
+}
+async function commitPasted(){
+  if(!PENDING) return;
+  const P=PENDING, rows=P.rows.map(r=>({...r,lab:P.lab}));
   await putSets(rows); SETS=await allSets();
-  LASTRESULT=evaluateSession(ts);
-  LASTRESULT.unknown=unknown;
+  LASTRESULT=evaluateSession(P.ts);
+  LASTRESULT.notes=P.exercises.filter(e=>e.note);
   REPO.importedAt=Date.now(); await kvSet('repo',REPO);
-  ta.value='';
+  PENDING=null; DAYTOUCHED=false;
+  document.getElementById('paste').value='';
   renderAll(); show('log');
-  if(unknown.length){
-    const b=document.getElementById('logresult');
-    b.insertAdjacentHTML('afterbegin','<div class="res down"><div class="h">Skipped '+unknown.length+' line'+(unknown.length===1?'':'s')+'</div><div class="b">'+unknown.map(esc).join(', ')+'</div></div>');
-  }
 }
 async function doBackup(){
   const blob=new Blob([JSON.stringify({v:2,sets:SETS,runs:RUNS,state:STATE,usermap:UMAP})],{type:'application/json'});
@@ -1160,7 +1301,8 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.
 document.querySelectorAll('#daypick button').forEach(b=>b.onclick=()=>{DAYCAT=b.dataset.cat;renderToday()});
 document.getElementById('mvpick').onchange=renderTrends;
 document.getElementById('backup').onclick=doBackup;
-document.getElementById('pastego').onclick=addPasted;
+document.getElementById('pastego').onclick=checkPasted;
+document.getElementById('pasteday').onchange=()=>{DAYTOUCHED=true};
 document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f)doRestore(f);e.target.value=''};
 
 (async function boot(){
