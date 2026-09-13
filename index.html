@@ -383,7 +383,7 @@ function rulesFor(rules,mvName,allNames){
   const head=p.split(' ').pop();
   const headCount=(allNames||[]).filter(n=>nphrase(n).split(' ').pop()===head).length;
   return rules.filter(r=>{
-    const rt=' '+nphrase(r.text)+' ';
+    const rt=' '+nphrase(r.text.replace(/\b(push|pull|leg|upper)s?\s+(day|session)s?/gi,' '))+' ';
     if(rt.includes(' '+p+' ')) return true;
     return headCount===1 && head.length>=3 && rt.includes(' '+head+' ');
   });
