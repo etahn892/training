@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Training</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#12161B">
@@ -136,6 +136,7 @@ nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;st
 <section id="s-home" class="screen on"><div class="wrap">
   <h1>Rotation</h1>
   <div id="lanes"></div>
+  <p class="tiny" id="datastat"></p>
   <div id="home-extra"></div>
   <h2>Data</h2>
   <div id="imports"></div>
@@ -396,6 +397,43 @@ function rulesForDay(rules,cat){
 }
 /* ================= model ================= */
 let SETS=[], STATE=null, UMAP={}, CHECKS={}, MVBY={};
+let REPO={csvSig:'',mdSig:'',importedAt:0,src:''}, STORAGE='';
+const sig=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return s.length+':'+h};
+function ago(ts){
+  if(!ts) return 'never';
+  const m=Math.floor((Date.now()-ts)/60000);
+  if(m<1) return 'just now';
+  if(m<60) return m+' min ago';
+  const h=Math.floor(m/60); if(h<24) return h+(h===1?' hour ago':' hours ago');
+  const d=Math.floor(h/24); return d+(d===1?' day ago':' days ago');
+}
+async function updateStorageStatus(){
+  try{
+    if(!navigator.storage||!navigator.storage.persist){ STORAGE='not reported'; return }
+    let p=navigator.storage.persisted?await navigator.storage.persisted():false;
+    if(!p&&(SETS.length||STATE)) p=await navigator.storage.persist();
+    STORAGE=p?'persistent':'best-effort';
+  }catch(e){ STORAGE='not reported' }
+}
+async function loadFromRepo(){
+  let changed=false, reached=false;
+  try{
+    const r=await fetch('./data/hevy_export.csv',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.csvSig){ const rows=ingestCSV(t); await putSets(rows); SETS=await allSets();
+        REPO.csvSig=s; REPO.importedAt=Date.now(); changed=true; } }
+  }catch(e){}
+  try{
+    const r=await fetch('./data/training-state.md',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.mdSig){ const st=parseStateMd(t);
+        if(st.movements.length||st.rules.length){
+          STATE=st; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); await kvSet('state',STATE);
+          REPO.mdSig=s; REPO.importedAt=Date.now(); changed=true; } } }
+  }catch(e){}
+  if(reached){ REPO.src='repo'; await kvSet('repo',REPO); }
+  return changed;
+}
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'2-digit'});
@@ -494,6 +532,14 @@ function renderHome(){
     }
     el.innerHTML=h+'</div><p class="tiny" style="margin-top:10px">Days since each category. Runs and other cardio never count toward legs.</p>';
   }
+  /* data + storage status */
+  const newest=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
+  document.getElementById('datastat').innerHTML = newest
+    ? 'Newest workout '+fmtD(newest)+' · loaded '+ago(REPO.importedAt)+
+      (REPO.src==='repo'?' from the repo':' from a file')+
+      ' · storage: <span'+(STORAGE==='persistent'?' class="ok"':'')+'>'+(STORAGE||'checking')+'</span>'
+    : '';
+
   /* unmapped mapper */
   const um=unmapped(), ex=document.getElementById('home-extra');
   if(um.length){
@@ -520,9 +566,9 @@ function renderHome(){
   /* imports */
   const last=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
   document.getElementById('imports').innerHTML=
-    dropHTML('csv','Hevy export','Profile → Settings → Export &amp; Import Data',
+    dropHTML('csv','Hevy export', REPO.src==='repo'?'Auto-loaded from ./data/hevy_export.csv — pick a file to override':'Profile → Settings → Export &amp; Import Data',
       SETS.length?'<span class="ok">'+SETS.length.toLocaleString()+' sets stored</span> · newest '+fmtD(last):'Nothing stored yet')+
-    dropHTML('md','training-state.md','Top sets, standing rules, pattern log',
+    dropHTML('md','training-state.md', REPO.src==='repo'?'Auto-loaded from ./data/training-state.md — pick a file to override':'Top sets, standing rules, pattern log',
       STATE?'<span class="ok">'+STATE.movements.length+' movements · '+STATE.rules.length+' rules · '+STATE.patterns.length+' log entries</span>':'Nothing stored yet');
   wireDrops();
   document.getElementById('stats').textContent =
@@ -682,6 +728,8 @@ async function handleFile(file,kind){
       await kvSet('state',STATE);
       if(st) st.innerHTML='<span class="ok">Loaded '+STATE.movements.length+' movements</span>';
     }
+    REPO.src='file'; REPO.importedAt=Date.now(); await kvSet('repo',REPO);
+    await updateStorageStatus();
     renderAll();
   }catch(e){ if(st) st.innerHTML='<span style="color:var(--alert)">'+esc(e.message)+'</span>'; }
 }
@@ -728,12 +776,17 @@ document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f
     STATE=await kvGet('state')||null;
     if(STATE){ MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); }
     UMAP=await kvGet('usermap')||{};
+    REPO=await kvGet('repo')||REPO;
     const c=await kvGet('checks');
     CHECKS=(c&&c.day===todayKey())?c.v:{};
     if(c&&c.day!==todayKey()) await kvSet('checks',{day:todayKey(),v:{}});
   }catch(e){}
   renderAll();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  await updateStorageStatus(); renderHome();
+  const changed=await loadFromRepo();
+  await updateStorageStatus();
+  if(changed) renderAll(); else renderHome();
 })();
 </script>
 </body>
