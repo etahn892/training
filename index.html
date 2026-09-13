@@ -25,107 +25,123 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
 body{
-  font-size:16px;line-height:1.45;overscroll-behavior-y:none;
-  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  font-size:17px;line-height:1.4;overscroll-behavior-y:none;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,label:focus-visible{outline:2px solid var(--upper);outline-offset:2px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .wrap{padding:var(--pad);padding-top:calc(var(--pad) + env(safe-area-inset-top));max-width:720px;margin:0 auto}
-h1{font-size:15px;font-weight:600;color:var(--dim);margin:0 0 14px;letter-spacing:.01em}
-h2{font-size:17px;font-weight:650;margin:26px 0 10px}
+h1{font-size:16px;font-weight:600;color:var(--dim);margin:0 0 14px}
+h2{font-size:18px;font-weight:650;margin:26px 0 10px}
+h3{font-size:15px;font-weight:600;margin:18px 0 6px}
 .screen{display:none}
 .screen.on{display:block}
 
-/* ---------- rotation lanes (home hero) ---------- */
-.lanes{position:relative;margin:22px 0 8px}
+/* rotation lanes */
+.lanes{position:relative;margin:18px 0 6px}
 .threshold{position:absolute;top:0;bottom:0;width:1px;background:var(--faint);pointer-events:none}
-.threshold::after{
-  content:"10 days";position:absolute;top:-16px;left:50%;transform:translateX(-50%);
-  font-size:10px;color:var(--faint);white-space:nowrap;font-family:var(--mono)
-}
-.lane{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);position:relative}
+.lane{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);position:relative}
 .lane:last-child{border-bottom:none}
-.lane-n{font-size:46px;font-weight:700;line-height:1;min-width:78px;text-align:right}
+.lane-n{font-size:54px;font-weight:700;line-height:1;min-width:88px;text-align:right}
 .lane-body{flex:1;min-width:0}
 .lane-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.lane-name{font-size:16px;font-weight:600}
-.lane-date{font-size:12px;color:var(--faint);font-family:var(--mono)}
-.lane-bar{height:6px;border-radius:3px;background:var(--raise);margin-top:7px;overflow:hidden}
-.lane-fill{height:100%;border-radius:3px}
-.lane.over .lane-n{color:var(--alert)}
-.lane.over .lane-name{color:var(--alert)}
-.unit{font-size:14px;color:var(--faint);font-weight:500}
+.lane-name{font-size:17px;font-weight:600}
+.lane-date{font-size:13px;color:var(--faint);font-family:var(--mono)}
+.lane-bar{height:7px;border-radius:4px;background:var(--raise);margin-top:8px;overflow:hidden}
+.lane-fill{height:100%;border-radius:4px}
+.lane.over .lane-n,.lane.over .lane-name{color:var(--alert)}
 
-/* ---------- generic ---------- */
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:9px}
-.muted{color:var(--dim);font-size:14px}
-.tiny{font-size:12px;color:var(--faint)}
-.pill{display:inline-block;font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+/* generic */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.muted{color:var(--dim);font-size:15px}
+.tiny{font-size:13px;color:var(--faint)}
+.pill{display:inline-block;font-size:12px;font-family:var(--mono);padding:3px 8px;border-radius:20px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
 .pill.u{border-color:#4a3c1e;color:var(--warn)}
-.rule{display:flex;gap:9px;font-size:13px;color:var(--warn);background:rgba(232,181,74,.07);border-left:2px solid var(--warn);padding:8px 11px;border-radius:0 6px 6px 0;margin:7px 0}
+.pill.good{border-color:#1e4a41;color:var(--ok)}
+.pill.bad{border-color:#4a2320;color:var(--alert)}
+.rule{display:flex;gap:10px;font-size:14px;color:var(--warn);background:rgba(232,181,74,.07);border-left:3px solid var(--warn);padding:10px 12px;border-radius:0 8px 8px 0;margin:8px 0}
 .rule.hard{color:var(--alert);background:rgba(232,87,75,.08);border-left-color:var(--alert)}
-.empty{border:1px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center;color:var(--dim);font-size:14px}
-.btn{background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font-size:14px;font-weight:550;display:inline-block}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:28px 18px;text-align:center;color:var(--dim);font-size:15px}
+.btn{background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:15px 16px;font-size:16px;font-weight:600;display:inline-block;min-height:52px;line-height:22px}
 .btn:active{background:var(--line)}
-.btn.wide{display:block;width:100%;text-align:center;margin-top:8px}
+.btn.wide{display:block;width:100%;text-align:center;margin-top:10px}
+.btn.go{background:#1d3a45;border-color:#2d5b6b;color:#bfe9f5}
 .row{display:flex;gap:8px;flex-wrap:wrap}
-select{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:15px;width:100%;-webkit-appearance:none;appearance:none}
+select,textarea,input[type=date]{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:16px;width:100%;-webkit-appearance:none;appearance:none;font-family:inherit}
+textarea{min-height:150px;font-family:var(--mono);line-height:1.5}
 
-/* ---------- segmented ---------- */
-.seg{display:flex;gap:6px;margin-bottom:16px}
-.seg button{flex:1;padding:11px 4px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--dim)}
+/* segmented — big targets */
+.seg{display:flex;gap:8px;margin-bottom:16px}
+.seg button{flex:1;padding:16px 4px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:16px;font-weight:650;color:var(--dim);min-height:56px}
 .seg button[aria-pressed="true"]{background:var(--raise);color:var(--ink);border-color:var(--faint)}
 
-/* ---------- today card ---------- */
-.mv{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;overflow:hidden}
-.mv-main{display:flex;align-items:flex-start;gap:13px;padding:13px 14px;width:100%;text-align:left}
-.tick{width:27px;height:27px;flex:none;border-radius:7px;border:1.5px solid var(--faint);margin-top:2px;position:relative}
-.mv.done .tick{background:var(--ok);border-color:var(--ok)}
-.mv.done .tick::after{content:"";position:absolute;left:9px;top:4px;width:6px;height:12px;border:solid #12161B;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
-.mv.done .mv-name{color:var(--faint);text-decoration:line-through}
-.mv-name{font-size:16px;font-weight:600;line-height:1.25}
-.mv-target{font-family:var(--mono);font-size:24px;font-weight:700;margin-top:5px;letter-spacing:-.02em}
-.mv-meta{font-size:12px;color:var(--faint);margin-top:4px;font-family:var(--mono)}
-.mv-rules{padding:0 14px 11px}
+/* today card */
+.mv{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.mv-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:13px 14px 9px}
+.mv-name{font-size:18px;font-weight:650;line-height:1.2}
+.setrow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line);width:100%;text-align:left;min-height:60px}
+.setrow .n{font-family:var(--mono);font-size:13px;color:var(--faint);width:16px;flex:none}
+.setrow .t{font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:0}
+.setrow .t small{font-size:15px;font-weight:600;color:var(--dim);letter-spacing:0}
+.setrow .last{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.tick{width:38px;height:38px;flex:none;border-radius:10px;border:2px solid var(--faint);position:relative}
+.setrow.done .tick{background:var(--ok);border-color:var(--ok)}
+.setrow.done .tick::after{content:"";position:absolute;left:13px;top:6px;width:9px;height:17px;border:solid #12161B;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.setrow.done .t{color:var(--faint);text-decoration:line-through}
+.mv-rules{padding:2px 14px 12px}
+.mv-note{padding:0 14px 12px;font-size:13px;color:var(--faint);font-family:var(--mono)}
 
-/* ---------- chart ---------- */
-.chart{width:100%;height:210px;display:block;touch-action:pan-y}
-.legend{display:flex;gap:16px;font-size:12px;color:var(--dim);margin-top:6px;align-items:center}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
-.sesslist{margin-top:12px}
-.sess{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+/* chart */
+.chart{width:100%;height:220px;display:block;touch-action:pan-y}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--dim);margin-top:6px;align-items:center;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px}
+.sess{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
 .sess:last-child{border:none}
-.sess .d{color:var(--faint);font-family:var(--mono);font-size:12px;flex:none}
+.sess .d{color:var(--faint);font-family:var(--mono);font-size:13px;flex:none}
 .sess .s{font-family:var(--mono);text-align:right}
 .sess.flag .s{color:var(--alert)}
 
-/* ---------- bars ---------- */
-.bars{display:flex;align-items:flex-end;gap:5px;height:130px;margin:8px 0 4px}
+/* bars */
+.bars{display:flex;align-items:flex-end;gap:6px;height:140px;margin:8px 0 4px}
 .bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}
 .bfill{width:100%;background:var(--alert);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
-.bnum{font-size:11px;font-family:var(--mono);color:var(--dim)}
-.blab{font-size:9px;color:var(--faint);font-family:var(--mono);writing-mode:vertical-rl;transform:rotate(180deg);height:34px}
-.log li{margin-bottom:9px;font-size:14px;line-height:1.5}
+.bnum{font-size:12px;font-family:var(--mono);color:var(--dim)}
+.blab{font-size:10px;color:var(--faint);font-family:var(--mono);writing-mode:vertical-rl;transform:rotate(180deg);height:36px}
 .log{padding-left:18px;margin:6px 0}
+.log li{margin-bottom:10px;font-size:15px;line-height:1.5}
 .log strong{color:var(--warn);font-weight:600}
 
-/* ---------- drop / import ---------- */
-.drop{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;margin-bottom:9px;transition:border-color .15s,background .15s}
+/* drop / import */
+.drop{border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center;margin-bottom:10px}
 .drop.hot{border-color:var(--ok);background:rgba(79,191,164,.06)}
-.drop h3{margin:0 0 3px;font-size:15px;font-weight:600}
-.drop p{margin:0 0 10px;font-size:13px;color:var(--dim)}
+.drop h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.drop p{margin:0 0 12px;font-size:14px;color:var(--dim)}
 .ok{color:var(--ok)}
+.bad{color:var(--alert)}
 input[type=file]{display:none}
+pre.diff{background:#0D1116;border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.55;white-space:pre;margin:0}
+pre.diff .add{color:var(--ok)}
+pre.diff .del{color:var(--alert)}
+pre.diff .q{color:var(--warn)}
 
-/* ---------- tabs ---------- */
+/* result screen */
+.res{border-left:3px solid var(--line);padding:4px 0 4px 12px;margin:10px 0}
+.res.down{border-color:var(--alert)}
+.res.up{border-color:var(--ok)}
+.res .h{font-size:16px;font-weight:650}
+.res .b{font-family:var(--mono);font-size:15px;color:var(--dim);margin-top:3px}
+
+/* tabs */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(18,22,27,.94);backdrop-filter:blur(12px);
   border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
-nav button{flex:1;padding:11px 2px 12px;font-size:11px;color:var(--faint);display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button{flex:1;padding:12px 2px 14px;font-size:11px;color:var(--faint);display:flex;flex-direction:column;align-items:center;gap:5px;min-height:60px}
 nav button[aria-current="true"]{color:var(--ink)}
-nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.badge{position:absolute;top:6px;right:calc(50% - 20px);background:var(--alert);color:#fff;font-size:9px;
-  min-width:15px;height:15px;border-radius:8px;display:grid;place-items:center;padding:0 4px;font-family:var(--mono)}
+nav svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:7px;right:calc(50% - 22px);background:var(--alert);color:#fff;font-size:10px;
+  min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 4px;font-family:var(--mono)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -138,12 +154,6 @@ nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;st
   <div id="lanes"></div>
   <p class="tiny" id="datastat"></p>
   <div id="home-extra"></div>
-  <h2>Data</h2>
-  <div id="imports"></div>
-  <button class="btn wide" id="backup">Save a backup file</button>
-  <label class="btn wide" for="f-restore">Restore from backup</label>
-  <input type="file" id="f-restore">
-  <p class="tiny" style="margin-top:14px" id="stats"></p>
 </div></section>
 
 <!-- ============ TODAY ============ -->
@@ -158,35 +168,57 @@ nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;st
   <div id="card"></div>
 </div></section>
 
-<!-- ============ HISTORY ============ -->
-<section id="s-history" class="screen"><div class="wrap">
-  <h1>History</h1>
-  <select id="mvpick"></select>
-  <div id="hist"></div>
+<!-- ============ LOG ============ -->
+<section id="s-log" class="screen"><div class="wrap">
+  <h1>Log a session</h1>
+  <div id="logresult"></div>
+  <textarea id="paste" placeholder="Hack squat 135x12, 185x12, 215x12&#10;Leg extension 100x12 100x12 140x12 145x10"></textarea>
+  <div class="row" style="margin-top:10px">
+    <input type="date" id="pastedate" style="flex:1;min-width:150px">
+    <button class="btn go" id="pastego" style="flex:1;min-width:150px">Add session</button>
+  </div>
+  <h2>Files</h2>
+  <div id="imports"></div>
+  <button class="btn wide" id="backup">Save a backup file</button>
+  <label class="btn wide" for="f-restore" tabindex="0">Restore from backup</label>
+  <input type="file" id="f-restore">
+  <p class="tiny" style="margin-top:14px" id="stats"></p>
 </div></section>
 
-<!-- ============ PATTERNS ============ -->
-<section id="s-patterns" class="screen"><div class="wrap">
-  <h1>Patterns</h1>
+<!-- ============ TRENDS ============ -->
+<section id="s-trends" class="screen"><div class="wrap">
+  <h1>Trends</h1>
+  <select id="mvpick"></select>
+  <div id="hist"></div>
   <div id="pat"></div>
+</div></section>
+
+<!-- ============ RUNS ============ -->
+<section id="s-runs" class="screen"><div class="wrap">
+  <h1>Runs</h1>
+  <div id="runbox"></div>
 </div></section>
 </main>
 
 <nav>
   <button data-tab="home" aria-current="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h11M4 17h7"/></svg>Home</button>
   <button data-tab="today"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M8 3v3M16 3v3M8.5 13l2.5 2.5 4.5-5"/></svg>Today</button>
-  <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-5 3.5 3L20 7"/></svg>History</button>
-  <button data-tab="patterns" style="position:relative"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>Patterns<span id="nb"></span></button>
+  <button data-tab="log" style="position:relative"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Log<span id="nb"></span></button>
+  <button data-tab="trends"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-5 3.5 3L20 7"/></svg>Trends</button>
+  <button data-tab="runs"><svg viewBox="0 0 24 24"><circle cx="14" cy="5" r="2"/><path d="M12.5 9.5 9 12l2.5 3 1 4M12.5 9.5 16 11l1.5 3.5M9 12 6 11M11.5 15 8 19"/></svg>Runs</button>
 </nav>
 <script>
-/* ================= storage ================= */
-const DBN='traininglog', DBV=1;
+/* ================= storage =================
+   DBV 2: adds the `runs` store. Runs live in their own store and are never
+   read by sessions()/rotation() — STANDING RULE 11 enforced structurally. */
+const DBN='traininglog', DBV=2;
 let _db;
 function idb(){ return _db ? Promise.resolve(_db) : new Promise((res,rej)=>{
   const r=indexedDB.open(DBN,DBV);
   r.onupgradeneeded=e=>{const d=e.target.result;
     if(!d.objectStoreNames.contains('sets')) d.createObjectStore('sets',{keyPath:'id'});
-    if(!d.objectStoreNames.contains('kv'))   d.createObjectStore('kv',{keyPath:'k'});};
+    if(!d.objectStoreNames.contains('kv'))   d.createObjectStore('kv',{keyPath:'k'});
+    if(!d.objectStoreNames.contains('runs')) d.createObjectStore('runs',{keyPath:'id'});};
   r.onsuccess=e=>{_db=e.target.result;res(_db)}; r.onerror=()=>rej(r.error);
 });}
 async function tx(store,mode,fn){const d=await idb();return new Promise((res,rej)=>{
@@ -196,14 +228,16 @@ async function tx(store,mode,fn){const d=await idb();return new Promise((res,rej
 const kvGet=k=>tx('kv','readonly',s=>s.get(k)).then(r=>r?r.v:undefined);
 const kvSet=(k,v)=>tx('kv','readwrite',s=>s.put({k,v}));
 const allSets=()=>tx('sets','readonly',s=>s.getAll());
-async function putSets(rows){const d=await idb();return new Promise((res,rej)=>{
-  const t=d.transaction('sets','readwrite'),s=t.objectStore('sets');
+const allRuns=()=>tx('runs','readonly',s=>s.getAll());
+async function putRows(store,rows){const d=await idb();return new Promise((res,rej)=>{
+  const t=d.transaction(store,'readwrite'),s=t.objectStore(store);
   for(const r of rows) s.put(r);
   t.oncomplete=()=>res(rows.length); t.onerror=()=>rej(t.error);});}
+const putSets=r=>putRows('sets',r), putRuns=r=>putRows('runs',r);
 
-/* ================= seed map: Hevy exercise -> movement name + category =================
-   Category here is only a fallback for rotation counting. Units are NEVER guessed here —
-   they are read from training-state.md. 'cardio' rows are excluded from rotation entirely. */
+/* ================= seed map =================
+   Category is a fallback for rotation counting only. Units are NEVER guessed
+   here — they come from the UNITS column in training-state.md. */
 const SEED={
 "Incline Bench Press (Dumbbell)":["Incline DB press","push"],
 "Incline Bench Press (Smith Machine)":["Smith incline press","push"],
@@ -287,13 +321,19 @@ function parseCSV(text){
 }
 const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 function pick(hdr,...names){for(const n of names){const i=hdr.indexOf(n);if(i>-1)return i}return -1}
+const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
 function parseDate(s){
   s=(s||'').trim(); if(!s) return null;
-  let m=s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4}),?\s+(\d{1,2}):(\d{2})/);
-  if(m){const M={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}[m[2].slice(0,3).toLowerCase()];
+  let m=s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4}),?\s+(\d{1,2}):(\d{2})/);      /* Hevy: 12 Sep 2026, 15:52 */
+  if(m){const M=MON[m[2].slice(0,3).toLowerCase()];
     if(M!==undefined) return new Date(+m[3],M,+m[1],+m[4],+m[5]);}
-  m=s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
-  if(m) return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  m=s.match(/^([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4}),?\s*(\d{1,2}):(\d{2})(?::\d{2})?\s*([AaPp][Mm])?/); /* Strava: Aug 24, 2026, 6:12:03 AM */
+  if(m){const M=MON[m[1].slice(0,3).toLowerCase()];
+    if(M!==undefined){ let h=+m[4]; const ap=(m[6]||'').toLowerCase();
+      if(ap==='pm'&&h<12) h+=12; if(ap==='am'&&h===12) h=0;
+      return new Date(+m[3],M,+m[2],h,+m[5]); }}
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3],m[4]?+m[4]:12,m[5]?+m[5]:0);
   const d=new Date(s); return isNaN(d)?null:d;
 }
 function ingestCSV(text){
@@ -301,7 +341,7 @@ function ingestCSV(text){
   const hdr=rows[0].map(norm);
   const iEx=pick(hdr,'exercise_title','exercise_name','exercise');
   const iTs=pick(hdr,'start_time','start','date');
-  if(iEx<0||iTs<0) throw new Error('This does not look like a Hevy export. Expected start_time and exercise_title columns.');
+  if(iEx<0||iTs<0) throw new Error('Not a Hevy export. Expected start_time and exercise_title columns.');
   const iTitle=pick(hdr,'title','workout_name'), iIdx=pick(hdr,'set_index','set_order'),
     iType=pick(hdr,'set_type'), iReps=pick(hdr,'reps','repetitions'),
     iLb=pick(hdr,'weight_lbs','weight_lb'), iKg=pick(hdr,'weight_kg'), iW=pick(hdr,'weight'),
@@ -321,18 +361,87 @@ function ingestCSV(text){
     const ts=d.getTime(), ex=c[iEx].trim();
     if(!exOrder.has(ts)) exOrder.set(ts,new Map());
     const eom=exOrder.get(ts); if(!eom.has(ex)) eom.set(ex,eom.size);
+    /* id is deterministic, so re-importing a full export overwrites in place
+       and never duplicates */
     const key=ts+'|'+ex+'|'+idx, n=(dupe.get(key)||0); dupe.set(key,n+1);
-    out.push({
-      id:key+'|'+n,
-      ts, ex, eo:eom.get(ex), title:iTitle>-1?c[iTitle]:'',
+    out.push({ id:key+'|'+n, ts, ex, eo:eom.get(ex), title:iTitle>-1?c[iTitle]:'',
       idx, type:(iType>-1?c[iType]:'normal')||'normal',
       w, reps:iReps>-1?(num(c[iReps]) ?? 0):0,
-      dist, dur:iDur>-1?num(c[iDur]):null,
-      note:iNote>-1?(c[iNote]||''):''
-    });
+      dist, dur:iDur>-1?num(c[iDur]):null, note:iNote>-1?(c[iNote]||''):'' });
   }
   if(!out.length) throw new Error('Parsed the file but found no sets in it.');
   return out;
+}
+
+/* ================= Strava activities.csv =================
+   UNTESTED against a real Strava export — no sample file was supplied. */
+function ingestStrava(text){
+  const rows=parseCSV(text); if(rows.length<2) throw new Error('No rows in that file.');
+  const hdr=rows[0].map(norm);
+  const iDate=pick(hdr,'activity_date','date'), iType=pick(hdr,'activity_type','type'),
+    iName=pick(hdr,'activity_name','name'),
+    iDist=pick(hdr,'distance'), iEl=pick(hdr,'elapsed_time'), iMov=pick(hdr,'moving_time');
+  if(iDate<0||iDist<0) throw new Error('Not a Strava export. Expected Activity Date and Distance columns.');
+  const num=v=>{const n=parseFloat(String(v).replace(/,/g,''));return isFinite(n)?n:null};
+  const raw=[];
+  for(let r=1;r<rows.length;r++){
+    const c=rows[r];
+    const type=(iType>-1?c[iType]:'Run')||'';
+    if(!/run/i.test(type)) continue;
+    const d=parseDate(c[iDate]); if(!d) continue;
+    const dist=num(c[iDist]); if(dist==null||dist<=0) continue;
+    let dur=iMov>-1?num(c[iMov]):null; if(dur==null&&iEl>-1) dur=num(c[iEl]);
+    raw.push({ts:d.getTime(),dist,dur,name:iName>-1?(c[iName]||''):''});
+  }
+  if(!raw.length) throw new Error('No runs found in that file.');
+  /* Strava's bulk export writes Distance in km in the summary column and in
+     metres in the detail column. Sniff which, then store miles. */
+  const med=raw.map(r=>r.dist).sort((a,b)=>a-b)[Math.floor(raw.length/2)];
+  const f = med>200 ? 0.000621371 : 0.621371;
+  return raw.map(r=>({ id:'run|'+r.ts, ts:r.ts, mi:Math.round(r.dist*f*1000)/1000,
+                       dur:r.dur||null, name:r.name, unitGuess: med>200?'metres':'km' }));
+}
+
+/* ================= raw pasted session ================= */
+const nkey=s=>(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+function resolveMovement(label){
+  const k=nkey(label); if(!k) return null;
+  for(const ex in SEED){ if(nkey(ex)===k||nkey(SEED[ex][0])===k) return ex }
+  for(const ex in UMAP){ if(nkey(ex)===k||nkey(UMAP[ex].name||'')===k) return ex }
+  /* token-overlap fallback, needs a clear winner */
+  const t=k.split(' ').filter(w=>w.length>2);
+  let best=null,bs=0,tie=false;
+  for(const ex in SEED){
+    const c=new Set(nkey(ex+' '+SEED[ex][0]).split(' '));
+    let s=0; t.forEach(w=>{if(c.has(w))s++});
+    s=s/Math.max(1,t.length);
+    if(s>bs){bs=s;best=ex;tie=false} else if(s===bs&&s>0) tie=true;
+  }
+  return (bs>=0.75&&!tie)?best:null;
+}
+function parseRawSession(text,dateStr){
+  const base=parseDate(dateStr)||new Date();
+  base.setHours(12,0,0,0);
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const out=[], unknown=[]; let eo=0, ts=base.getTime();
+  for(const line of lines){
+    if(/^\d{4}-\d{2}-\d{2}$/.test(line)){ const d=parseDate(line); if(d){d.setHours(12,0,0,0); ts=d.getTime()} continue }
+    const m=line.match(/^(.+?)\s+(-?\d[\d.]*\s*[x×]\s*\d+.*)$/i) || line.match(/^(.+?)\s+((?:\d+\s*[,\s]\s*)*\d+)$/);
+    if(!m) continue;
+    const label=m[1].replace(/[:–—-]\s*$/,'').trim(), body=m[2];
+    const ex=resolveMovement(label);
+    if(!ex){ unknown.push(label); continue }
+    const pairs=[...body.matchAll(/(-?\d+(?:\.\d+)?)\s*[x×]\s*(\d+)/gi)];
+    let sets=[];
+    if(pairs.length) sets=pairs.map(p=>({w:parseFloat(p[1]),reps:parseInt(p[2],10)}));
+    else sets=[...body.matchAll(/\d+/g)].map(p=>({w:null,reps:parseInt(p[0],10)})); /* bodyweight: "5, 4" */
+    if(!sets.length) continue;
+    sets.forEach((s,i)=>out.push({
+      id:ts+'|'+ex+'|'+i+'|0', ts, ex, eo, title:'Pasted', idx:i, type:'normal',
+      w:s.w==null?null:Math.abs(s.w), reps:s.reps, dist:null, dur:null, note:'pasted' }));
+    eo++;
+  }
+  return {rows:out, unknown:[...new Set(unknown)], ts};
 }
 
 /* ================= training-state.md ================= */
@@ -362,7 +471,7 @@ function parseStateMd(text){
       const g=j=>j===undefined?'':(cs[j]||'').replace(/\*\*/g,'').trim();
       const name=g(hdrMap.name); if(!name||/^-+$/.test(name)) continue;
       st.movements.push({name, units:g(hdrMap.units), top:g(hdrMap.top), date:g(hdrMap.date),
-        next:g(hdrMap.next), all:g(hdrMap.all),
+        next:g(hdrMap.next), all:g(hdrMap.all), line:i, cols:hdrMap,
         cat: sub.includes('push')?'push': sub.includes('pull')?'pull': sub.includes('leg')?'legs':''});
     }
     if(sec.includes('standing rule')){
@@ -375,6 +484,21 @@ function parseStateMd(text){
     }
   }
   return st;
+}
+/* "120 × 10" -> {w:120,reps:10}. "24 × 15 ×3" -> sets:3. "9, 6" -> bodyweight reps.
+   "out of rotation 40d" -> null. Trailing prose is kept as .note */
+function parseTarget(s,units){
+  if(!s) return null;
+  const m=s.match(/(-?\d+(?:\.\d+)?)\s*[×x]\s*(\d+)(?:\s*[×x]\s*(\d+))?/);
+  if(m){
+    const rest=s.slice(m.index+m[0].length).replace(/^[\s,—-]+/,'');
+    return {w:parseFloat(m[1]), reps:parseInt(m[2],10), sets:m[3]?parseInt(m[3],10):null, note:rest||''};
+  }
+  if(/bw/i.test(units||'')){
+    const r=[...s.matchAll(/\b(\d+)\b/g)].map(x=>parseInt(x[1],10));
+    if(r.length) return {w:null, reps:r[0], repList:r, sets:r.length, note:''};
+  }
+  return null;
 }
 const nphrase=s=>(s||'').toLowerCase().replace(/\(.*?\)/g,' ')
   .replace(/[^a-z]+/g,' ').trim().split(' ')
@@ -390,15 +514,34 @@ function rulesFor(rules,mvName,allNames){
   });
 }
 function rulesForDay(rules,cat){
-  const key={push:/push day|push session/,pull:/pull day/,legs:/leg day|leg extension|rdl|run/,upper:/upper day/}[cat];
+  const key={push:/push day|push session/,pull:/pull day/,legs:/leg day|leg extension|rdl/,upper:/upper day/}[cat];
   const out=rules.filter(r=>key&&key.test(r.text.toLowerCase()));
   if(new Date().getHours()<6){ const s=rules.find(r=>/superset/i.test(r.text)); if(s&&!out.includes(s)) out.unshift(s); }
   return out;
 }
+/* a rule like "12–15 reps" pins the rep range for the movement it governs */
+function ruleRange(rules,mvName,allNames){
+  for(const r of rulesFor(rules,mvName,allNames)){
+    const m=r.text.match(/(\d+)\s*[–—-]\s*(\d+)\s*reps/i);
+    if(m) return [+m[1],+m[2]];
+  }
+  return null;
+}
+
 /* ================= model ================= */
-let SETS=[], STATE=null, UMAP={}, CHECKS={}, MVBY={};
-let REPO={csvSig:'',mdSig:'',importedAt:0,src:''}, STORAGE='';
+let SETS=[], RUNS=[], STATE=null, UMAP={}, CHECKS={}, MVBY={};
+let REPO={csvSig:'',mdSig:'',stravaSig:'',importedAt:0,src:''}, STORAGE='', LASTRESULT=null;
 const sig=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return s.length+':'+h};
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'2-digit'});
+const mdD=ts=>{const d=new Date(ts);return String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+/* calendar-day difference, not elapsed-hours — a session at 15:52 yesterday is 1 day ago */
+const dayOf=ts=>{const d=new Date(ts);return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())};
+const daysBetween=(a,b)=>Math.round((dayOf(b)-dayOf(a))/864e5);
+const isAssisted=ex=>/assist/i.test(ex);
+const signed=(ex,w)=>w==null?null:(isAssisted(ex)?-Math.abs(w):w);
+const showW=(ex,w)=>w==null?'BW':(isAssisted(ex)?'-'+Math.abs(w):String(w));
 function ago(ts){
   if(!ts) return 'never';
   const m=Math.floor((Date.now()-ts)/60000);
@@ -407,40 +550,6 @@ function ago(ts){
   const h=Math.floor(m/60); if(h<24) return h+(h===1?' hour ago':' hours ago');
   const d=Math.floor(h/24); return d+(d===1?' day ago':' days ago');
 }
-async function updateStorageStatus(){
-  try{
-    if(!navigator.storage||!navigator.storage.persist){ STORAGE='not reported'; return }
-    let p=navigator.storage.persisted?await navigator.storage.persisted():false;
-    if(!p&&(SETS.length||STATE)) p=await navigator.storage.persist();
-    STORAGE=p?'persistent':'best-effort';
-  }catch(e){ STORAGE='not reported' }
-}
-async function loadFromRepo(){
-  let changed=false, reached=false;
-  try{
-    const r=await fetch('./data/hevy_export.csv',{cache:'no-cache'});
-    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
-      if(s!==REPO.csvSig){ const rows=ingestCSV(t); await putSets(rows); SETS=await allSets();
-        REPO.csvSig=s; REPO.importedAt=Date.now(); changed=true; } }
-  }catch(e){}
-  try{
-    const r=await fetch('./data/training-state.md',{cache:'no-cache'});
-    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
-      if(s!==REPO.mdSig){ const st=parseStateMd(t);
-        if(st.movements.length||st.rules.length){
-          STATE=st; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); await kvSet('state',STATE);
-          REPO.mdSig=s; REPO.importedAt=Date.now(); changed=true; } } }
-  }catch(e){}
-  if(reached){ REPO.src='repo'; await kvSet('repo',REPO); }
-  return changed;
-}
-const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'2-digit'});
-const daysBetween=(a,b)=>Math.floor((b-a)/864e5);
-const isAssisted=ex=>/assist/i.test(ex);
-const signed=(ex,w)=>w==null?null:(isAssisted(ex)?-Math.abs(w):w);
-
 function movementName(ex){ return (UMAP[ex]&&UMAP[ex].name) || (SEED[ex]&&SEED[ex][0]) || ex; }
 function catOf(ex){
   if(UMAP[ex]) return UMAP[ex].cat;
@@ -461,7 +570,7 @@ const unmapped=()=>[...new Set(SETS.filter(r=>!catOf(r.ex)&&!CARDIO.test(r.ex)).
 function sessions(){
   const by=new Map();
   for(const r of SETS){ if(!by.has(r.ts)) by.set(r.ts,[]); by.get(r.ts).push(r); }
-  const out=[...by.entries()].map(([ts,rows])=>{
+  return [...by.entries()].map(([ts,rows])=>{
     rows.sort((a,b)=>(a.eo||0)-(b.eo||0)||a.idx-b.idx);
     const lift=rows.filter(r=>!isCardio(r));
     const c={push:0,pull:0,legs:0};
@@ -475,7 +584,6 @@ function sessions(){
     }
     return {ts,rows,label,n};
   }).sort((a,b)=>b.ts-a.ts);
-  return out;
 }
 function rotation(){
   const ss=sessions(), now=Date.now(), out={};
@@ -483,76 +591,179 @@ function rotation(){
     const last=ss.find(s=>s.label===cat);
     out[cat]=last?{days:daysBetween(last.ts,now),ts:last.ts}:{days:null,ts:null};
   }
-  return out;
+  return out;   /* RUNS is never consulted here — STANDING RULE 11 */
 }
-/* working sets only; overshoot = set 1 heavier (signed) than set 2 */
+/* movement-sessions, working sets only */
 function exSessions(ex){
   const by=new Map();
   for(const r of SETS){ if(r.ex!==ex||r.type==='warmup') continue;
     if(!by.has(r.ts)) by.set(r.ts,[]); by.get(r.ts).push(r); }
   return [...by.entries()].map(([ts,rows])=>{
     rows.sort((a,b)=>a.idx-b.idx);
-    const vals=rows.map(r=>signed(ex,r.w)).filter(v=>v!=null);
-    const over=vals.length>=2 && vals[0]>vals[1];
-    return {ts,rows,top:vals.length?Math.max(...vals):null,over};
+    const raw=rows.map(r=>({w:signed(ex,r.w),reps:r.reps}));
+    const bw=raw.length>0&&raw.every(x=>x.w==null);          /* dips, pull-ups: reps are the load */
+    const v=bw?raw:raw.filter(x=>x.w!=null);
+    let top=null;
+    for(const x of v) if(!top|| (bw ? x.reps>top.reps : (x.w>top.w||(x.w===top.w&&x.reps>top.reps)))) top=x;
+    return {ts,rows,top,over:bw?null:overshoot(v),vals:v,bw};
   }).sort((a,b)=>a.ts-b.ts);
 }
+/* OVERSHOOT — definition changed from the old "set 1 heavier than set 2".
+   (a) descend-after-peak: the set right after the heaviest is lighter AND at fewer reps
+   (b) peak-too-heavy:     a later lighter set beat the peak's reps by >=1/0.6
+   (b) is what catches ramp-then-crash, which (a) and the old rule both miss. */
+function overshoot(v){
+  if(v.length<2) return null;
+  let pi=0; for(let i=1;i<v.length;i++) if(v[i].w>v[pi].w||(v[i].w===v[pi].w&&v[i].reps>v[pi].reps)) pi=i;
+  const p=v[pi], after=v.slice(pi+1);
+  if(!after.length) return null;
+  const a=after[0].w<p.w && after[0].reps<p.reps;
+  const b=after.some(x=>x.w<p.w && x.reps>=p.reps/0.6);
+  return (a||b)?{peak:p,kind:a&&b?'both':a?'descend':'too heavy'}:null;
+}
 function overshootByMonth(){
-  const by=new Map(), seen=new Map();
+  const by=new Map(), tot=new Map(), seen=new Map();
   for(const r of SETS){ if(r.type==='warmup'||isCardio(r)) continue;
     const k=r.ts+'|'+r.ex; if(!seen.has(k)) seen.set(k,[]); seen.get(k).push(r); }
   for(const [k,rows] of seen){
     rows.sort((a,b)=>a.idx-b.idx);
-    const ex=rows[0].ex, vals=rows.map(r=>signed(ex,r.w)).filter(v=>v!=null);
-    if(vals.length>=2&&vals[0]>vals[1]){
-      const d=new Date(rows[0].ts), m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-      by.set(m,(by.get(m)||0)+1);
+    const ex=rows[0].ex, raw=rows.map(r=>({w:signed(ex,r.w),reps:r.reps}));
+    if(raw.every(x=>x.w==null)) continue;
+    const v=raw.filter(x=>x.w!=null);
+    const d=new Date(rows[0].ts), m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    tot.set(m,(tot.get(m)||0)+1);
+    if(overshoot(v)) by.set(m,(by.get(m)||0)+1);
+  }
+  return [...tot.entries()].sort((a,b)=>a[0]<b[0]?-1:1)
+    .map(([m,t])=>[m.slice(2),by.get(m)||0,t,Math.round((by.get(m)||0)/t*100)]);
+}
+/* top set per movement = heaviest working set of the most recent session it appears in.
+   Matches the hand-kept file on 28 of 34 movements; the 6 misses are flagged in the diff. */
+function currentTops(){
+  const out={};
+  const exs=[...new Set(SETS.filter(r=>!isCardio(r)).map(r=>r.ex))];
+  for(const ex of exs){
+    const es=exSessions(ex); if(!es.length) continue;
+    const last=es[es.length-1]; if(!last.top) continue;
+    let all=null;
+    for(const s of es) if(s.top&&(!all|| (last.bw ? s.top.reps>all.reps
+        : (s.top.w>all.w||(s.top.w===all.w&&s.top.reps>all.reps))))) all={...s.top,ts:s.ts};
+    const prev=es.length>1?es[es.length-2]:null;
+    out[movementName(ex)]={ex,last,prev,all,name:movementName(ex)};
+  }
+  return out;
+}
+
+/* ================= session result ================= */
+function evaluateSession(ts){
+  const rows=SETS.filter(r=>r.ts===ts&&r.type!=='warmup'&&!isCardio(r));
+  const byEx=new Map();
+  for(const r of rows){ if(!byEx.has(r.ex)) byEx.set(r.ex,[]); byEx.get(r.ex).push(r) }
+  const down=[],up=[],tgt=[],crash=[];
+  for(const [ex,rs] of byEx){
+    rs.sort((a,b)=>a.idx-b.idx);
+    const raw=rs.map(r=>({w:signed(ex,r.w),reps:r.reps}));
+    const bw=raw.length>0&&raw.every(x=>x.w==null);
+    const v=bw?raw:raw.filter(x=>x.w!=null);
+    let top=null; for(const x of v) if(!top|| (bw ? x.reps>top.reps : (x.w>top.w||(x.w===top.w&&x.reps>top.reps)))) top=x;
+    const es=exSessions(ex).filter(s=>s.ts<ts);
+    const prev=es.length?es[es.length-1]:null;
+    const name=movementName(ex);
+    const o=bw?null:overshoot(v); if(o) crash.push({name,ex,o,v});
+    if(top&&prev&&prev.top){
+      const d=bw?0:(top.w-prev.top.w), dr=top.reps-prev.top.reps;
+      if(d<0||(d===0&&dr<0)) down.push({name,ex,now:top,was:prev.top,ts:prev.ts,d,dr});
+      else if(d>0||dr>0) up.push({name,ex,now:top,was:prev.top,ts:prev.ts,d,dr});
+    }
+    const mv=MVBY[name];
+    if(mv&&top){
+      const t=parseTarget(mv.next,mv.units);
+      if(t&&t.w!=null){
+        const hit = top.w>t.w || (top.w===t.w&&top.reps>=t.reps);
+        const beat= top.w>t.w || (top.w===t.w&&top.reps>t.reps);
+        tgt.push({name,target:mv.next,t,top,hit,beat});
+      } else if(mv.next) tgt.push({name,target:mv.next,t:null,top,hit:null});
     }
   }
-  return [...by.entries()].sort((a,b)=>a[0]<b[0]?-1:1);
+  down.sort((a,b)=>a.d-b.d); up.sort((a,b)=>b.d-a.d);
+  return {ts,down,up,tgt,crash,count:byEx.size};
+}
+
+/* ================= training-state.md diff (D1: read-only, copyable) ================= */
+function buildDiff(){
+  if(!STATE||!STATE.raw) return null;
+  const tops=currentTops(), L=STATE.raw.split(/\r?\n/), changes=[];
+  for(const mv of STATE.movements){
+    const t=tops[mv.name]; if(!t||!t.last||!t.last.top) continue;
+    const c=mv.cols, line=L[mv.line]; if(!line) continue;
+    const cells=line.split('|');
+    const newTop=t.last.bw
+      ? t.last.vals.map(x=>x.reps).join(', ')
+      : Math.abs(t.last.top.w)+' × '+t.last.top.reps;
+    const newDate=mdD(t.last.ts);
+    const oldTop=mv.top.replace(/\s*[×x]\s*\d+\s*$/,m=>m); /* keep any ×N suffix for comparison */
+    const suffix=(mv.top.match(/\s[×x]\d+$/)||[''])[0];
+    const sameTop=mv.top.replace(/\s+/g,'')===(newTop+suffix).replace(/\s+/g,'');
+    const sameDate=mv.date.endsWith(newDate);
+    if(sameTop&&sameDate) continue;
+    const disputed=[];
+    if(t.last.over) disputed.push('that top set crashed after ('+t.last.over.kind+')');
+    const oldT=parseTarget(mv.top,mv.units);
+    if(oldT&&oldT.w!=null&&Math.abs(t.last.top.w)<oldT.w) disputed.push('lower than the number in the file');
+    const nc=cells.slice();
+    if(c.top!==undefined) nc[c.top+1]=' '+newTop+suffix+' ';
+    if(c.date!==undefined) nc[c.date+1]=' '+newDate+' ';
+    changes.push({name:mv.name, old:line, neu:nc.join('|'), disputed});
+  }
+  return changes;
+}
+function diffText(changes){
+  let s='# training-state.md — proposed top-set updates '+todayKey()+'\n'+
+        '# Next target, STANDING RULES and PATTERN LOG are untouched.\n'+
+        '# '+changes.length+' row'+(changes.length===1?'':'s')+' would change.\n\n';
+  for(const c of changes){
+    s+='- '+c.old+'\n+ '+c.neu+'\n';
+    if(c.disputed.length) s+='? review: '+c.disputed.join('; ')+'\n';
+    s+='\n';
+  }
+  return s;
 }
 
 /* ================= render: home ================= */
 const COLOR={push:'var(--push)',pull:'var(--pull)',legs:'var(--legs)',upper:'var(--upper)'};
 function renderHome(){
   const el=document.getElementById('lanes');
-  if(!SETS.length){ el.innerHTML='<div class="empty">No sessions yet. Add your Hevy export below and this fills in.</div>'; }
+  if(!SETS.length){ el.innerHTML='<div class="empty">No sessions yet. Add your Hevy export on the Log tab.</div>'; }
   else{
     const rot=rotation(), MAXD=21;
-    let h='<div class="lanes"><div class="threshold" style="left:calc(92px + (100% - 92px) * '+(10/MAXD)+')"></div>';
+    let h='<div class="lanes"><div class="threshold" style="left:calc(102px + (100% - 102px) * '+(10/MAXD)+')"></div>';
     for(const cat of ['push','pull','legs','upper']){
       const r=rot[cat], over=r.days!=null&&r.days>10;
       const pct=r.days==null?0:Math.min(100,r.days/MAXD*100);
       h+='<div class="lane'+(over?' over':'')+'">'+
         '<div class="lane-n num">'+(r.days==null?'—':r.days)+'</div>'+
         '<div class="lane-body"><div class="lane-top"><span class="lane-name">'+cat[0].toUpperCase()+cat.slice(1)+'</span>'+
-        '<span class="lane-date">'+(r.ts?fmtD(r.ts):'never logged')+'</span></div>'+
+        '<span class="lane-date">'+(r.ts?fmtD(r.ts):'never')+'</span></div>'+
         '<div class="lane-bar"><div class="lane-fill" style="width:'+pct+'%;background:'+(over?'var(--alert)':COLOR[cat])+'"></div></div>'+
         '</div></div>';
     }
-    el.innerHTML=h+'</div><p class="tiny" style="margin-top:10px">Days since each category. Runs and other cardio never count toward legs.</p>';
+    el.innerHTML=h+'</div>';
   }
-  /* data + storage status */
   const newest=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
   document.getElementById('datastat').innerHTML = newest
-    ? 'Newest workout '+fmtD(newest)+' · loaded '+ago(REPO.importedAt)+
-      (REPO.src==='repo'?' from the repo':' from a file')+
-      ' · storage: <span'+(STORAGE==='persistent'?' class="ok"':'')+'>'+(STORAGE||'checking')+'</span>'
+    ? 'Newest '+fmtD(newest)+' · '+ago(REPO.importedAt)+' · <span'+(STORAGE==='persistent'?' class="ok"':'')+'>'+(STORAGE||'checking')+'</span>'
     : '';
-
-  /* unmapped mapper */
   const um=unmapped(), ex=document.getElementById('home-extra');
   if(um.length){
-    ex.innerHTML='<h2>Unrecognised movements <span class="pill u">'+um.length+'</span></h2>'+
-      '<p class="muted" style="margin:0 0 9px">These are in your export but not in training-state.md. Assign each one so it counts toward rotation.</p>'+
-      um.map(e=>'<div class="card"><div style="font-weight:600;margin-bottom:9px">'+esc(e)+'</div>'+
-        '<div class="row"><select data-um-cat="'+esc(e)+'" style="flex:1;min-width:120px">'+
-        ['','push','pull','legs','cardio'].map(c=>'<option value="'+c+'">'+(c?c[0].toUpperCase()+c.slice(1):'Pick a category')+'</option>').join('')+
-        '</select><select data-um-u="'+esc(e)+'" style="flex:1;min-width:120px">'+
-        [['','Pick units'],['TOTAL','Total, both hands'],['PER ARM','Per arm'],['PER SIDE','Per side'],
+    ex.innerHTML='<h2>Unrecognised <span class="pill u">'+um.length+'</span></h2>'+
+      um.map(e=>'<div class="card"><div style="font-weight:650;margin-bottom:10px">'+esc(e)+'</div>'+
+        '<div class="row"><select data-um-cat="'+esc(e)+'" style="flex:1;min-width:130px">'+
+        ['','push','pull','legs','cardio'].map(c=>'<option value="'+c+'">'+(c?c[0].toUpperCase()+c.slice(1):'Category')+'</option>').join('')+
+        '</select><select data-um-u="'+esc(e)+'" style="flex:1;min-width:130px">'+
+        [['','Units'],['TOTAL','Total, both hands'],['PER ARM','Per arm'],['PER SIDE','Per side'],
          ['machine','Machine stack'],['cable','Cable stack'],['BW','Bodyweight'],['assist','Assistance']]
          .map(u=>'<option value="'+u[0]+'">'+u[1]+'</option>').join('')+'</select></div></div>').join('')+
-      '<button class="btn wide" id="um-save">Save these</button>';
+      '<button class="btn wide" id="um-save">Save</button>';
     ex.querySelector('#um-save').onclick=async()=>{
       ex.querySelectorAll('[data-um-cat]').forEach(s=>{
         const e=s.getAttribute('data-um-cat'), u=ex.querySelector('[data-um-u="'+CSS.escape(e)+'"]');
@@ -562,87 +773,173 @@ function renderHome(){
     };
   } else ex.innerHTML='';
   document.getElementById('nb').innerHTML = um.length?'<span class="badge">'+um.length+'</span>':'';
+}
 
-  /* imports */
-  const last=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
-  document.getElementById('imports').innerHTML=
-    dropHTML('csv','Hevy export', REPO.src==='repo'?'Auto-loaded from ./data/hevy_export.csv — pick a file to override':'Profile → Settings → Export &amp; Import Data',
-      SETS.length?'<span class="ok">'+SETS.length.toLocaleString()+' sets stored</span> · newest '+fmtD(last):'Nothing stored yet')+
-    dropHTML('md','training-state.md', REPO.src==='repo'?'Auto-loaded from ./data/training-state.md — pick a file to override':'Top sets, standing rules, pattern log',
-      STATE?'<span class="ok">'+STATE.movements.length+' movements · '+STATE.rules.length+' rules · '+STATE.patterns.length+' log entries</span>':'Nothing stored yet');
-  wireDrops();
-  document.getElementById('stats').textContent =
-    SETS.length? sessions().length+' sessions stored on this device. Nothing is uploaded anywhere.' : '';
-}
-function dropHTML(kind,title,sub,status){
-  return '<div class="drop" data-drop="'+kind+'"><h3>'+title+'</h3><p>'+sub+'</p>'+
-    '<label class="btn" for="f-'+kind+'">Choose file</label>'+
-    '<input type="file" id="f-'+kind+'">'+
-    '<p class="tiny" style="margin:9px 0 0" id="st-'+kind+'">'+status+'</p></div>';
-}
 /* ================= render: today ================= */
 let DAYCAT=null;
 function cardMovements(cat){
   const last=sessions().find(s=>s.label===cat);
   if(last){
-    const seen=[],order=[];
-    for(const r of last.rows){ if(isCardio(r)) continue; if(!seen.includes(r.ex)){seen.push(r.ex);order.push(r.ex)} }
+    const order=[];
+    for(const r of last.rows){ if(isCardio(r)) continue; if(!order.includes(r.ex)) order.push(r.ex) }
     return {from:fmtD(last.ts), list:order.map(ex=>({ex,name:movementName(ex),mv:MVBY[movementName(ex)]||null}))};
   }
   if(STATE){ const l=STATE.movements.filter(m=>m.cat===cat);
     if(l.length) return {from:null,list:l.map(m=>({ex:m.name,name:m.name,mv:m}))}; }
   return {from:null,list:[]};
 }
+/* rule-driven ordering wins over the order carried from the last session */
+function applyOrderRules(cat,list){
+  if(cat==='pull'){ /* Rule 5 — heavy rows and shrugs early */
+    const early=x=>/row|shrug/i.test(x.name)?0:1;
+    list=list.map((x,i)=>({x,i})).sort((a,b)=>early(a.x)-early(b.x)||a.i-b.i).map(o=>o.x);
+  }
+  if(cat==='legs'){ /* Rule 2 — leg extension never first, always behind a compound */
+    const iE=list.findIndex(x=>/leg extension/i.test(x.name));
+    const iC=list.findIndex(x=>/squat|press|deadlift|rdl/i.test(x.name));
+    if(iE===0&&list.length>1){
+      const [e]=list.splice(0,1);
+      list.splice(iC>0?iC+1:1,0,e);
+    }
+  }
+  return list;
+}
+function targetSets(x){
+  const mv=x.mv, units=unitsOf(x.ex);
+  const es=exSessions(x.ex), last=es.length?es[es.length-1]:null;
+  const t=mv?parseTarget(mv.next,units):null;
+  const range=STATE?ruleRange(STATE.rules,x.name,STATE.movements.map(m=>m.name)):null;
+  let n = t&&t.sets ? t.sets : (last?Math.max(1,last.vals.length||last.rows.length):3);
+  n=Math.min(n,6);
+  const rows=[];
+  for(let i=0;i<n;i++){
+    let label,sub;
+    if(t&&t.w!=null){
+      const lo=range?range[0]:t.reps, hi=range?range[1]:t.reps;
+      label=(t.w<0||isAssisted(x.ex)?'-'+Math.abs(t.w):t.w)+' <small>× '+(lo===hi?lo:lo+'-'+hi)+'</small>';
+    } else if(t&&t.repList){
+      label=(t.repList[i]!==undefined?t.repList[i]:t.repList[t.repList.length-1])+' <small>reps BW</small>';
+    } else if(last&&last.vals[i]){
+      label=showW(x.ex,Math.abs(last.vals[i].w))+' <small>× '+last.vals[i].reps+'</small>';
+    } else label='<small>no target</small>';
+    const lv=last&&last.rows[i];
+    sub=lv?showW(x.ex,lv.w)+'×'+lv.reps:'—';
+    rows.push({label,sub});
+  }
+  return {rows,last,t,units};
+}
 function renderToday(){
   const wrap=document.getElementById('card');
   document.querySelectorAll('#daypick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cat===DAYCAT));
-  if(!DAYCAT){ wrap.innerHTML='<div class="empty">Pick a day type to build the card.</div>'; return }
-  if(!SETS.length&&!STATE){ wrap.innerHTML='<div class="empty">Add your Hevy export and training-state.md on the Home tab first.</div>'; return }
-  const {from,list}=cardMovements(DAYCAT);
-  if(!list.length){ wrap.innerHTML='<div class="empty">No '+DAYCAT+' session in your export yet, and training-state.md has no '+DAYCAT+' movements.</div>'; return }
+  if(!DAYCAT){ wrap.innerHTML='<div class="empty">Pick a day.</div>'; return }
+  if(!SETS.length&&!STATE){ wrap.innerHTML='<div class="empty">Add your export on the Log tab first.</div>'; return }
+  let {from,list}=cardMovements(DAYCAT);
+  if(!list.length){ wrap.innerHTML='<div class="empty">No '+DAYCAT+' session in the export and nothing in training-state.md.</div>'; return }
+  list=applyOrderRules(DAYCAT,list);
   let dayRules=STATE?rulesForDay(STATE.rules,DAYCAT):[];
   const ALLNAMES=STATE?STATE.movements.map(m=>m.name):[];
   const rdlMissing = DAYCAT==='legs' && !list.some(x=>/rdl|romanian/i.test(x.name));
   if(rdlMissing) dayRules=dayRules.filter(r=>!/rdl|romanian/i.test(r.text));
   const shown=new Set(dayRules.map(r=>r.n));
   let h='';
-  if(dayRules.length) h+=dayRules.map(r=>'<div class="rule hard"><span class="num">'+r.n+'</span><span>'+esc(r.text)+'</span></div>').join('');
+  h+=dayRules.map(r=>'<div class="rule hard"><span class="num">'+r.n+'</span><span>'+esc(r.text)+'</span></div>').join('');
   if(rdlMissing&&STATE){
     const r4=STATE.rules.find(r=>/rdl|romanian/i.test(r.text));
-    h+='<div class="rule hard"><span class="num">'+(r4?r4.n:'!')+'</span><span>No RDL on this card. They are mandatory on leg day.</span></div>';
+    h+='<div class="rule hard"><span class="num">'+(r4?r4.n:'!')+'</span><span>No RDL on this card. Mandatory on leg day.</span></div>';
     if(r4) shown.add(r4.n);
   }
-  h+=list.map((x,i)=>{
-    const mv=x.mv, done=!!CHECKS[DAYCAT+'|'+x.ex];
-    const units=unitsOf(x.ex);
+  h+=list.map(x=>{
+    const {rows,t,units}=targetSets(x);
     const rs=(STATE?rulesFor(STATE.rules,x.name,ALLNAMES):[]).filter(r=>!shown.has(r.n));
-    return '<div class="mv'+(done?' done':'')+'" data-mv="'+esc(x.ex)+'">'+
-      '<button class="mv-main"><span class="tick"></span><span style="flex:1;min-width:0">'+
-        '<span class="mv-name">'+esc(x.name)+'</span>'+
-        '<div class="mv-target num">'+esc(mv&&mv.next?mv.next:'no target set')+'</div>'+
-        '<div class="mv-meta">'+(mv&&mv.top?'last '+esc(mv.top)+(mv.date?' · '+esc(mv.date):''):'not in training-state.md')+
-          (units?' <span class="pill">'+esc(units)+'</span>':' <span class="pill u">units unknown</span>')+'</div>'+
-      '</span></button>'+
+    return '<div class="mv" data-mv="'+esc(x.ex)+'">'+
+      '<div class="mv-head"><span class="mv-name">'+esc(x.name)+'</span>'+
+      (units?'<span class="pill">'+esc(units)+'</span>':'<span class="pill u">units unknown</span>')+'</div>'+
+      rows.map((r,i)=>{
+        const k=DAYCAT+'|'+x.ex+'|'+i, done=!!CHECKS[k];
+        return '<button class="setrow'+(done?' done':'')+'" data-k="'+esc(k)+'">'+
+          '<span class="n">'+(i+1)+'</span><span class="t num">'+r.label+'</span>'+
+          '<span class="last">'+esc(r.sub)+'</span><span class="tick"></span></button>';
+      }).join('')+
+      (t&&t.note?'<div class="mv-note">'+esc(t.note)+'</div>':'')+
+      (!t&&x.mv&&x.mv.next?'<div class="mv-note">'+esc(x.mv.next)+'</div>':'')+
       (rs.length?'<div class="mv-rules">'+rs.map(r=>'<div class="rule"><span class="num">'+r.n+'</span><span>'+esc(r.text)+'</span></div>').join('')+'</div>':'')+
     '</div>';
   }).join('');
-  h+='<p class="tiny" style="margin-top:12px">'+(from?'Order taken from your last '+DAYCAT+' session, '+from+'.':'Order taken from training-state.md.')+' Ticks clear at midnight.</p>';
+  h+='<p class="tiny" style="margin-top:12px">Right column is last session, set for set. '+(from?'Order from '+from+'.':'Order from training-state.md.')+' Ticks clear at midnight.</p>';
   wrap.innerHTML=h;
-  wrap.querySelectorAll('.mv-main').forEach(b=>b.onclick=async()=>{
-    const box=b.closest('.mv'), k=DAYCAT+'|'+box.dataset.mv;
-    CHECKS[k]=!CHECKS[k]; box.classList.toggle('done',CHECKS[k]);
+  wrap.querySelectorAll('.setrow').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.k; CHECKS[k]=!CHECKS[k]; b.classList.toggle('done',CHECKS[k]);
     await kvSet('checks',{day:todayKey(),v:CHECKS});
   });
 }
 
-/* ================= render: history ================= */
+/* ================= render: log ================= */
+function renderLog(){
+  const last=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
+  document.getElementById('imports').innerHTML=
+    dropHTML('csv','Hevy export','Full or single session. Merges, never duplicates.',
+      SETS.length?'<span class="ok">'+SETS.length.toLocaleString()+' sets</span> · newest '+fmtD(last):'Nothing stored')+
+    dropHTML('md','training-state.md','Read-only. Top sets, rules, pattern log.',
+      STATE?'<span class="ok">'+STATE.movements.length+' movements · '+STATE.rules.length+' rules</span>':'Nothing stored')+
+    dropHTML('strava','Strava activities.csv','Runs only. Never touches leg rotation.',
+      RUNS.length?'<span class="ok">'+RUNS.length+' runs</span>':'Nothing stored');
+  wireDrops();
+  document.getElementById('stats').textContent =
+    SETS.length? sessions().length+' sessions on this device. Nothing is uploaded.' : '';
+  renderResult();
+}
+function dropHTML(kind,title,sub,status){
+  return '<div class="drop" data-drop="'+kind+'"><h3>'+title+'</h3><p>'+sub+'</p>'+
+    '<label class="btn" for="f-'+kind+'" tabindex="0">Choose file</label>'+
+    '<input type="file" id="f-'+kind+'">'+
+    '<p class="tiny" style="margin:10px 0 0" id="st-'+kind+'">'+status+'</p></div>';
+}
+function renderResult(){
+  const box=document.getElementById('logresult');
+  if(!LASTRESULT){ box.innerHTML=''; return }
+  const R=LASTRESULT; let h='<h2>'+fmtD(R.ts)+' · '+R.count+' movements</h2>';
+  if(!R.down.length&&!R.crash.length) h+='<div class="res"><div class="h">Nothing regressed.</div></div>';
+  for(const d of R.down)
+    h+='<div class="res down"><div class="h">'+esc(d.name)+' down '+(d.d?Math.abs(d.d)+' lb':Math.abs(d.dr)+' reps')+'</div>'+
+       '<div class="b">'+showW(d.ex,Math.abs(d.now.w))+'×'+d.now.reps+'  was '+showW(d.ex,Math.abs(d.was.w))+'×'+d.was.reps+' on '+fmtD(d.ts)+'</div></div>';
+  for(const c of R.crash)
+    h+='<div class="res down"><div class="h">'+esc(c.name)+' — opened too heavy and descended</div>'+
+       '<div class="b">'+c.v.map(x=>showW(c.ex,Math.abs(x.w))+'×'+x.reps).join('  ')+'</div></div>';
+  for(const u of R.up)
+    h+='<div class="res up"><div class="h">'+esc(u.name)+' up '+(u.d?u.d+' lb':'+'+u.dr+' reps')+'</div>'+
+       '<div class="b">'+showW(u.ex,Math.abs(u.now.w))+'×'+u.now.reps+'  was '+showW(u.ex,Math.abs(u.was.w))+'×'+u.was.reps+'</div></div>';
+  const hit=R.tgt.filter(t=>t.hit===true), miss=R.tgt.filter(t=>t.hit===false), na=R.tgt.filter(t=>t.hit===null);
+  if(R.tgt.length){
+    h+='<h3>Targets</h3>';
+    h+=miss.map(t=>'<div class="res down"><div class="h">missed '+esc(t.name)+'</div><div class="b">'+esc(t.target)+' → '+showW('',Math.abs(t.top.w))+'×'+t.top.reps+'</div></div>').join('');
+    h+=hit.map(t=>'<div class="res up"><div class="h">'+(t.beat?'beat ':'hit ')+esc(t.name)+'</div><div class="b">'+esc(t.target)+' → '+showW('',Math.abs(t.top.w))+'×'+t.top.reps+'</div></div>').join('');
+    if(na.length) h+='<p class="tiny">'+na.length+' target'+(na.length===1?'':'s')+' not numeric, not scored: '+na.map(t=>esc(t.name)).join(', ')+'</p>';
+  }
+  const ch=buildDiff();
+  if(ch&&ch.length){
+    h+='<h3>training-state.md diff</h3><p class="tiny">The file is not modified. Copy this back to Claude.</p>'+
+       '<pre class="diff">'+diffText(ch).split('\n').map(l=>
+         l.startsWith('+')?'<span class="add">'+esc(l)+'</span>':
+         l.startsWith('-')?'<span class="del">'+esc(l)+'</span>':
+         l.startsWith('?')?'<span class="q">'+esc(l)+'</span>':esc(l)).join('\n')+'</pre>'+
+       '<button class="btn wide" id="copydiff">Copy diff</button>';
+  } else if(ch) h+='<h3>training-state.md diff</h3><p class="tiny">No top-set rows changed.</p>';
+  h+='<button class="btn wide" id="clearres">Dismiss</button>';
+  box.innerHTML=h;
+  const cd=document.getElementById('copydiff');
+  if(cd) cd.onclick=async()=>{ try{ await navigator.clipboard.writeText(diffText(buildDiff())); cd.textContent='Copied' }
+    catch(e){ cd.textContent='Select the block above and copy' } };
+  document.getElementById('clearres').onclick=()=>{ LASTRESULT=null; renderResult() };
+}
+
+/* ================= render: trends ================= */
 function movementOptions(){
   const by=new Map();
   for(const r of SETS){ if(isCardio(r))continue; const c=by.get(r.ex)||{n:0,last:0}; c.n++; c.last=Math.max(c.last,r.ts); by.set(r.ex,c) }
   return [...by.entries()].sort((a,b)=>b[1].last-a[1].last).map(([ex,c])=>({ex,n:c.n,last:c.last}));
 }
-function chartSVG(pts){
-  const W=720,H=210,PL=46,PR=12,PT=14,PB=26;
+function chartSVG(pts,fmt){
+  const W=720,H=220,PL=52,PR=12,PT=14,PB=26;
   if(!pts.length) return '';
   const xs=pts.map(p=>p.ts), ys=pts.map(p=>p.v);
   let y0=Math.min(...ys), y1=Math.max(...ys);
@@ -654,63 +951,96 @@ function chartSVG(pts){
   let g='';
   for(let i=0;i<=2;i++){const v=y0+(y1-y0)*i/2, y=Y(v);
     g+='<line x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'" stroke="#2B3742" stroke-width="1" vector-effect="non-scaling-stroke"/>'+
-       '<text x="'+(PL-7)+'" y="'+(y+4)+'" fill="#5C6D7C" font-size="12" text-anchor="end" font-family="ui-monospace,monospace">'+Math.round(v)+'</text>';}
+       '<text x="'+(PL-7)+'" y="'+(y+4)+'" fill="#5C6D7C" font-size="13" text-anchor="end" font-family="ui-monospace,monospace">'+(fmt?fmt(v):Math.round(v))+'</text>';}
   const d=pts.map((p,i)=>(i?'L':'M')+X(p.ts).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
   let c='';
-  pts.forEach(p=>{ c+='<circle cx="'+X(p.ts).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(p.over?5.5:4)+'" fill="'+(p.over?'#E8574B':'#4FBFA4')+'"/>'; });
-  const lab='<text x="'+PL+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="11" font-family="ui-monospace,monospace">'+fmtD(x0)+'</text>'+
-    '<text x="'+(W-PR)+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="11" text-anchor="end" font-family="ui-monospace,monospace">'+fmtD(x1)+'</text>';
+  pts.forEach(p=>{ c+='<circle cx="'+X(p.ts).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(p.over?6:4.5)+'" fill="'+(p.over?'#E8574B':'#4FBFA4')+'"/>'; });
+  const lab='<text x="'+PL+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="12" font-family="ui-monospace,monospace">'+fmtD(x0)+'</text>'+
+    '<text x="'+(W-PR)+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="12" text-anchor="end" font-family="ui-monospace,monospace">'+fmtD(x1)+'</text>';
   return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+g+
     '<path d="'+d+'" fill="none" stroke="#3D5464" stroke-width="2" vector-effect="non-scaling-stroke"/>'+c+lab+'</svg>';
 }
-function renderHistory(){
+function renderTrends(){
   const sel=document.getElementById('mvpick'), box=document.getElementById('hist');
   const opts=movementOptions();
-  if(!opts.length){ sel.innerHTML=''; sel.style.display='none';
-    box.innerHTML='<div class="empty">Add your Hevy export on the Home tab and every movement shows up here.</div>'; return }
+  if(!opts.length){ sel.style.display='none'; box.innerHTML='<div class="empty">Add your Hevy export on the Log tab.</div>'; renderPatterns(); return }
   sel.style.display='';
   const keep=sel.value;
-  sel.innerHTML=opts.map(o=>'<option value="'+esc(o.ex)+'">'+esc(movementName(o.ex))+' — '+o.n+' sets</option>').join('');
+  sel.innerHTML=opts.map(o=>'<option value="'+esc(o.ex)+'">'+esc(movementName(o.ex))+' — '+o.n+'</option>').join('');
   if(keep&&opts.some(o=>o.ex===keep)) sel.value=keep;
-  const ex=sel.value, es=exSessions(ex).filter(s=>s.top!=null);
+  const ex=sel.value, es=exSessions(ex).filter(s=>s.top);
   const units=unitsOf(ex), assisted=isAssisted(ex);
-  if(!es.length){ box.innerHTML='<div class="empty">No weighted working sets recorded for this one.</div>'; return }
-  const pts=es.map(s=>({ts:s.ts,v:s.top,over:s.over}));
+  if(!es.length){ box.innerHTML='<div class="empty">No weighted working sets.</div>'; renderPatterns(); return }
+  const bw=es[es.length-1].bw;
+  const pts=es.map(s=>({ts:s.ts,v:bw?s.top.reps:s.top.w,over:!!s.over}));
   const overN=es.filter(s=>s.over).length;
   box.innerHTML=
     '<div style="margin:14px 0 2px"><span class="pill">'+esc(units||'units unknown')+'</span>'+
+      (bw?' <span class="pill">reps, not load</span>':'')+
       (assisted?' <span class="pill">less assistance is higher</span>':'')+'</div>'+
     chartSVG(pts)+
     '<div class="legend"><span><span class="dot" style="background:#4FBFA4"></span>top set</span>'+
-      '<span><span class="dot" style="background:#E8574B"></span>set 1 heavier than set 2 ('+overN+')</span></div>'+
-    '<div class="sesslist">'+es.slice().reverse().map(s=>
+      '<span><span class="dot" style="background:#E8574B"></span>overshoot ('+overN+')</span></div>'+
+    '<div>'+es.slice().reverse().map(s=>
       '<div class="sess'+(s.over?' flag':'')+'"><span class="d">'+fmtD(s.ts)+'</span><span class="s">'+
-      s.rows.map(r=>(r.w==null?'BW':(assisted?'-'+Math.abs(r.w):r.w))+'×'+r.reps).join('  ')+'</span></div>').join('')+'</div>';
+      s.rows.map(r=>showW(ex,r.w)+'×'+r.reps).join('  ')+'</span></div>').join('')+'</div>';
+  renderPatterns();
 }
-
-/* ================= render: patterns ================= */
 function renderPatterns(){
   const box=document.getElementById('pat');
   let h='';
   const om=overshootByMonth().slice(-12);
   if(om.length){
-    const mx=Math.max(...om.map(m=>m[1]));
-    h+='<h2>Overshoot by month</h2><p class="muted" style="margin:0 0 4px">Times set 1 was heavier than set 2.</p><div class="bars">'+
-      om.map(([m,n])=>'<div class="bcol"><span class="bnum">'+n+'</span>'+
-        '<div class="bfill" style="height:'+(n/mx*80)+'px"></div>'+
+    const mx=Math.max(...om.map(m=>m[3]),1);
+    h+='<h2>Overshoot rate</h2><p class="tiny" style="margin:0 0 6px">Share of movement-sessions that opened too heavy and descended.</p><div class="bars">'+
+      om.map(([m,n,t,p])=>'<div class="bcol"><span class="bnum">'+p+'</span>'+
+        '<div class="bfill" style="height:'+(p/mx*86)+'px"></div>'+
         '<span class="blab">'+m+'</span></div>').join('')+'</div>';
   }
   if(STATE&&STATE.patterns.length){
     h+='<h2>Pattern log</h2>';
     let open=false;
     for(const p of STATE.patterns){
-      if(p[0]==='§'){ if(open){h+='</ul>';open=false} h+='<h3 style="font-size:14px;color:var(--warn);margin:18px 0 2px;font-weight:600">'+esc(p.slice(1))+'</h3>' }
+      if(p[0]==='§'){ if(open){h+='</ul>';open=false} h+='<h3 style="color:var(--warn)">'+esc(p.slice(1))+'</h3>' }
       else { if(!open){h+='<ul class="log">';open=true} h+='<li>'+esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</li>' }
     }
     if(open) h+='</ul>';
   }
-  if(!h) h='<div class="empty">Add training-state.md and your Hevy export on the Home tab.</div>';
   box.innerHTML=h;
+}
+
+/* ================= render: runs ================= */
+function renderRuns(){
+  const box=document.getElementById('runbox');
+  if(!RUNS.length){ box.innerHTML='<div class="empty">Drop Strava\'s activities.csv on the Log tab, or put it at ./data/activities.csv.</div>'; return }
+  const rs=RUNS.slice().sort((a,b)=>a.ts-b.ts);
+  const pace=r=>r.dur&&r.mi?r.dur/60/r.mi:null;
+  const pf=v=>{const m=Math.floor(v),s=Math.round((v-m)*60);return m+':'+String(s).padStart(2,'0')};
+  const pts=rs.filter(r=>pace(r)).map(r=>({ts:r.ts,v:pace(r)}));
+  const week=new Map(), mon=new Map();
+  for(const r of rs){
+    const d=new Date(r.ts), day=(d.getDay()+6)%7, w=new Date(d); w.setDate(d.getDate()-day);
+    const wk=w.getFullYear()+'-'+String(w.getMonth()+1).padStart(2,'0')+'-'+String(w.getDate()).padStart(2,'0');
+    week.set(wk,(week.get(wk)||0)+r.mi);
+    const mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    mon.set(mk,(mon.get(mk)||0)+r.mi);
+  }
+  const mk=[...mon.entries()].sort().slice(-6), wk=[...week.entries()].sort().slice(-6);
+  box.innerHTML=
+    (pts.length>1?'<h2>Pace</h2><p class="tiny" style="margin:0 0 4px">min/mile, lower is faster.</p>'+chartSVG(pts,v=>pf(v)):'')+
+    '<h2>Miles by month</h2><div class="bars">'+
+      mk.map(([m,v])=>{const mx=Math.max(...mk.map(x=>x[1]),1);
+        return '<div class="bcol"><span class="bnum">'+v.toFixed(1)+'</span><div class="bfill" style="height:'+(v/mx*86)+'px;background:var(--upper)"></div><span class="blab">'+m.slice(2)+'</span></div>'}).join('')+
+    '</div>'+
+    '<h2>Miles by week</h2><div class="bars">'+
+      wk.map(([m,v])=>{const mx=Math.max(...wk.map(x=>x[1]),1);
+        return '<div class="bcol"><span class="bnum">'+v.toFixed(1)+'</span><div class="bfill" style="height:'+(v/mx*86)+'px;background:var(--upper)"></div><span class="blab">'+m.slice(5)+'</span></div>'}).join('')+
+    '</div>'+
+    '<h2>Recent</h2>'+rs.slice().reverse().slice(0,25).map(r=>
+      '<div class="sess"><span class="d">'+fmtD(r.ts)+'</span><span class="s">'+r.mi.toFixed(2)+' mi'+
+      (r.dur?'  '+Math.floor(r.dur/60)+':'+String(Math.round(r.dur%60)).padStart(2,'0'):'')+
+      (pace(r)?'  '+pf(pace(r))+'/mi':'')+'</span></div>').join('')+
+    '<p class="tiny" style="margin-top:12px">Runs never count toward leg rotation.</p>';
 }
 
 /* ================= files ================= */
@@ -719,19 +1049,26 @@ async function handleFile(file,kind){
   try{
     const text=await file.text();
     if(kind==='csv'){
-      const rows=ingestCSV(text); await putSets(rows); SETS=await allSets();
-      if(st) st.innerHTML='<span class="ok">Added '+rows.length.toLocaleString()+' sets</span>';
+      const rows=ingestCSV(text);
+      const before=new Set(SETS.map(r=>r.id));
+      await putSets(rows); SETS=await allSets();
+      const fresh=rows.filter(r=>!before.has(r.id));
+      if(st) st.innerHTML='<span class="ok">'+rows.length.toLocaleString()+' sets read, '+fresh.length+' new</span>';
+      if(fresh.length){ LASTRESULT=evaluateSession(Math.max(...fresh.map(r=>r.ts))); }
+    } else if(kind==='strava'){
+      const runs=ingestStrava(text); await putRuns(runs); RUNS=await allRuns();
+      if(st) st.innerHTML='<span class="ok">'+runs.length+' runs ('+(runs[0].unitGuess)+' detected)</span>';
     } else {
-      STATE=parseStateMd(text);
-      if(!STATE.movements.length&&!STATE.rules.length) throw new Error('No CURRENT TOP SETS table or STANDING RULES found in that file.');
-      MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m);
+      const s=parseStateMd(text);
+      if(!s.movements.length&&!s.rules.length) throw new Error('No CURRENT TOP SETS table or STANDING RULES in that file.');
+      STATE=s; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m);
       await kvSet('state',STATE);
-      if(st) st.innerHTML='<span class="ok">Loaded '+STATE.movements.length+' movements</span>';
+      if(st) st.innerHTML='<span class="ok">'+STATE.movements.length+' movements</span>';
     }
     REPO.src='file'; REPO.importedAt=Date.now(); await kvSet('repo',REPO);
     await updateStorageStatus();
     renderAll();
-  }catch(e){ if(st) st.innerHTML='<span style="color:var(--alert)">'+esc(e.message)+'</span>'; }
+  }catch(e){ if(st) st.innerHTML='<span class="bad">'+esc(e.message)+'</span>'; }
 }
 function wireDrops(){
   document.querySelectorAll('[data-drop]').forEach(d=>{
@@ -742,23 +1079,78 @@ function wireDrops(){
     d.addEventListener('drop',e=>{const f=e.dataTransfer.files[0]; if(f) handleFile(f,kind)});
   });
 }
+async function addPasted(){
+  const ta=document.getElementById('paste'), dt=document.getElementById('pastedate');
+  const box=document.getElementById('logresult');
+  if(!ta.value.trim()) return;
+  const {rows,unknown,ts}=parseRawSession(ta.value,dt.value);
+  if(!rows.length){
+    box.innerHTML='<div class="res down"><div class="h">Nothing parsed</div><div class="b">'+
+      (unknown.length?'Unrecognised: '+unknown.map(esc).join(', '):'Expected lines like  Hack squat 135x12, 185x12')+'</div></div>';
+    return;
+  }
+  await putSets(rows); SETS=await allSets();
+  LASTRESULT=evaluateSession(ts);
+  LASTRESULT.unknown=unknown;
+  REPO.importedAt=Date.now(); await kvSet('repo',REPO);
+  ta.value='';
+  renderAll(); show('log');
+  if(unknown.length){
+    const b=document.getElementById('logresult');
+    b.insertAdjacentHTML('afterbegin','<div class="res down"><div class="h">Skipped '+unknown.length+' line'+(unknown.length===1?'':'s')+'</div><div class="b">'+unknown.map(esc).join(', ')+'</div></div>');
+  }
+}
 async function doBackup(){
-  const blob=new Blob([JSON.stringify({v:1,sets:SETS,state:STATE,usermap:UMAP})],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({v:2,sets:SETS,runs:RUNS,state:STATE,usermap:UMAP})],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='training-backup-'+todayKey()+'.json'; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
 async function doRestore(file){
   try{ const j=JSON.parse(await file.text());
-    if(j.sets) { await putSets(j.sets); SETS=await allSets(); }
+    if(j.sets){ await putSets(j.sets); SETS=await allSets(); }
+    if(j.runs){ await putRuns(j.runs); RUNS=await allRuns(); }
     if(j.state){ STATE=j.state; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); await kvSet('state',STATE); }
     if(j.usermap){ UMAP=j.usermap; await kvSet('usermap',UMAP); }
     renderAll();
-  }catch(e){ alert('That backup file could not be read.') }
+  }catch(e){ alert('That backup could not be read.') }
+}
+async function updateStorageStatus(){
+  try{
+    if(!navigator.storage||!navigator.storage.persist){ STORAGE='not reported'; return }
+    let p=navigator.storage.persisted?await navigator.storage.persisted():false;
+    if(!p&&(SETS.length||STATE)) p=await navigator.storage.persist();
+    STORAGE=p?'persistent':'best-effort';
+  }catch(e){ STORAGE='not reported' }
+}
+async function loadFromRepo(){
+  let changed=false, reached=false;
+  try{
+    const r=await fetch('./data/hevy_export.csv',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.csvSig){ await putSets(ingestCSV(t)); SETS=await allSets();
+        REPO.csvSig=s; REPO.importedAt=Date.now(); changed=true; } }
+  }catch(e){}
+  try{
+    const r=await fetch('./data/training-state.md',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.mdSig){ const st=parseStateMd(t);
+        if(st.movements.length||st.rules.length){
+          STATE=st; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); await kvSet('state',STATE);
+          REPO.mdSig=s; REPO.importedAt=Date.now(); changed=true; } } }
+  }catch(e){}
+  try{
+    const r=await fetch('./data/activities.csv',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.stravaSig){ await putRuns(ingestStrava(t)); RUNS=await allRuns();
+        REPO.stravaSig=s; changed=true; } }
+  }catch(e){}
+  if(reached){ REPO.src='repo'; await kvSet('repo',REPO); }
+  return changed;
 }
 
 /* ================= shell ================= */
-function renderAll(){ renderHome(); renderToday(); renderHistory(); renderPatterns(); }
+function renderAll(){ renderHome(); renderToday(); renderLog(); renderTrends(); renderRuns(); }
 function show(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+tab));
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab));
@@ -766,13 +1158,14 @@ function show(tab){
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
 document.querySelectorAll('#daypick button').forEach(b=>b.onclick=()=>{DAYCAT=b.dataset.cat;renderToday()});
-document.getElementById('mvpick').onchange=renderHistory;
+document.getElementById('mvpick').onchange=renderTrends;
 document.getElementById('backup').onclick=doBackup;
+document.getElementById('pastego').onclick=addPasted;
 document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f)doRestore(f);e.target.value=''};
 
 (async function boot(){
   try{
-    SETS=await allSets();
+    SETS=await allSets(); RUNS=await allRuns();
     STATE=await kvGet('state')||null;
     if(STATE){ MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); }
     UMAP=await kvGet('usermap')||{};
@@ -781,6 +1174,7 @@ document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f
     CHECKS=(c&&c.day===todayKey())?c.v:{};
     if(c&&c.day!==todayKey()) await kvSet('checks',{day:todayKey(),v:{}});
   }catch(e){}
+  document.getElementById('pastedate').value=todayKey();
   renderAll();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   await updateStorageStatus(); renderHome();
