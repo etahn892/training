@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Training</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#12161B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" href="./icon-192.png">
+<style>
+:root{
+  --bg:#12161B; --surface:#1A2129; --raise:#222C36; --line:#2B3742;
+  --ink:#E9EFF4; --dim:#8697A6; --faint:#5C6D7C;
+  --ok:#4FBFA4; --warn:#E8B54A; --alert:#E8574B;
+  --push:#E8B54A; --pull:#4FBFA4; --legs:#9A86E8; --upper:#5AA3E0;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --pad:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+body{
+  font-size:16px;line-height:1.45;overscroll-behavior-y:none;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wrap{padding:var(--pad);padding-top:calc(var(--pad) + env(safe-area-inset-top));max-width:720px;margin:0 auto}
+h1{font-size:15px;font-weight:600;color:var(--dim);margin:0 0 14px;letter-spacing:.01em}
+h2{font-size:17px;font-weight:650;margin:26px 0 10px}
+.screen{display:none}
+.screen.on{display:block}
+
+/* ---------- rotation lanes (home hero) ---------- */
+.lanes{position:relative;margin:22px 0 8px}
+.threshold{position:absolute;top:0;bottom:0;width:1px;background:var(--faint);pointer-events:none}
+.threshold::after{
+  content:"10 days";position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:var(--faint);white-space:nowrap;font-family:var(--mono)
+}
+.lane{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);position:relative}
+.lane:last-child{border-bottom:none}
+.lane-n{font-size:46px;font-weight:700;line-height:1;min-width:78px;text-align:right}
+.lane-body{flex:1;min-width:0}
+.lane-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lane-name{font-size:16px;font-weight:600}
+.lane-date{font-size:12px;color:var(--faint);font-family:var(--mono)}
+.lane-bar{height:6px;border-radius:3px;background:var(--raise);margin-top:7px;overflow:hidden}
+.lane-fill{height:100%;border-radius:3px}
+.lane.over .lane-n{color:var(--alert)}
+.lane.over .lane-name{color:var(--alert)}
+.unit{font-size:14px;color:var(--faint);font-weight:500}
+
+/* ---------- generic ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:9px}
+.muted{color:var(--dim);font-size:14px}
+.tiny{font-size:12px;color:var(--faint)}
+.pill{display:inline-block;font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.pill.u{border-color:#4a3c1e;color:var(--warn)}
+.rule{display:flex;gap:9px;font-size:13px;color:var(--warn);background:rgba(232,181,74,.07);border-left:2px solid var(--warn);padding:8px 11px;border-radius:0 6px 6px 0;margin:7px 0}
+.rule.hard{color:var(--alert);background:rgba(232,87,75,.08);border-left-color:var(--alert)}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center;color:var(--dim);font-size:14px}
+.btn{background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font-size:14px;font-weight:550;display:inline-block}
+.btn:active{background:var(--line)}
+.btn.wide{display:block;width:100%;text-align:center;margin-top:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+select{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:15px;width:100%;-webkit-appearance:none;appearance:none}
+
+/* ---------- segmented ---------- */
+.seg{display:flex;gap:6px;margin-bottom:16px}
+.seg button{flex:1;padding:11px 4px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--raise);color:var(--ink);border-color:var(--faint)}
+
+/* ---------- today card ---------- */
+.mv{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;overflow:hidden}
+.mv-main{display:flex;align-items:flex-start;gap:13px;padding:13px 14px;width:100%;text-align:left}
+.tick{width:27px;height:27px;flex:none;border-radius:7px;border:1.5px solid var(--faint);margin-top:2px;position:relative}
+.mv.done .tick{background:var(--ok);border-color:var(--ok)}
+.mv.done .tick::after{content:"";position:absolute;left:9px;top:4px;width:6px;height:12px;border:solid #12161B;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.mv.done .mv-name{color:var(--faint);text-decoration:line-through}
+.mv-name{font-size:16px;font-weight:600;line-height:1.25}
+.mv-target{font-family:var(--mono);font-size:24px;font-weight:700;margin-top:5px;letter-spacing:-.02em}
+.mv-meta{font-size:12px;color:var(--faint);margin-top:4px;font-family:var(--mono)}
+.mv-rules{padding:0 14px 11px}
+
+/* ---------- chart ---------- */
+.chart{width:100%;height:210px;display:block;touch-action:pan-y}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--dim);margin-top:6px;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.sesslist{margin-top:12px}
+.sess{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.sess:last-child{border:none}
+.sess .d{color:var(--faint);font-family:var(--mono);font-size:12px;flex:none}
+.sess .s{font-family:var(--mono);text-align:right}
+.sess.flag .s{color:var(--alert)}
+
+/* ---------- bars ---------- */
+.bars{display:flex;align-items:flex-end;gap:5px;height:130px;margin:8px 0 4px}
+.bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}
+.bfill{width:100%;background:var(--alert);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.bnum{font-size:11px;font-family:var(--mono);color:var(--dim)}
+.blab{font-size:9px;color:var(--faint);font-family:var(--mono);writing-mode:vertical-rl;transform:rotate(180deg);height:34px}
+.log li{margin-bottom:9px;font-size:14px;line-height:1.5}
+.log{padding-left:18px;margin:6px 0}
+.log strong{color:var(--warn);font-weight:600}
+
+/* ---------- drop / import ---------- */
+.drop{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;margin-bottom:9px;transition:border-color .15s,background .15s}
+.drop.hot{border-color:var(--ok);background:rgba(79,191,164,.06)}
+.drop h3{margin:0 0 3px;font-size:15px;font-weight:600}
+.drop p{margin:0 0 10px;font-size:13px;color:var(--dim)}
+.ok{color:var(--ok)}
+input[type=file]{display:none}
+
+/* ---------- tabs ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(18,22,27,.94);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav button{flex:1;padding:11px 2px 12px;font-size:11px;color:var(--faint);display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button[aria-current="true"]{color:var(--ink)}
+nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:6px;right:calc(50% - 20px);background:var(--alert);color:#fff;font-size:9px;
+  min-width:15px;height:15px;border-radius:8px;display:grid;place-items:center;padding:0 4px;font-family:var(--mono)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<main>
+<!-- ============ HOME ============ -->
+<section id="s-home" class="screen on"><div class="wrap">
+  <h1>Rotation</h1>
+  <div id="lanes"></div>
+  <div id="home-extra"></div>
+  <h2>Data</h2>
+  <div id="imports"></div>
+  <button class="btn wide" id="backup">Save a backup file</button>
+  <label class="btn wide" for="f-restore">Restore from backup</label>
+  <input type="file" id="f-restore">
+  <p class="tiny" style="margin-top:14px" id="stats"></p>
+</div></section>
+
+<!-- ============ TODAY ============ -->
+<section id="s-today" class="screen"><div class="wrap">
+  <h1>Today</h1>
+  <div class="seg" id="daypick">
+    <button data-cat="push">Push</button>
+    <button data-cat="pull">Pull</button>
+    <button data-cat="legs">Legs</button>
+    <button data-cat="upper">Upper</button>
+  </div>
+  <div id="card"></div>
+</div></section>
+
+<!-- ============ HISTORY ============ -->
+<section id="s-history" class="screen"><div class="wrap">
+  <h1>History</h1>
+  <select id="mvpick"></select>
+  <div id="hist"></div>
+</div></section>
+
+<!-- ============ PATTERNS ============ -->
+<section id="s-patterns" class="screen"><div class="wrap">
+  <h1>Patterns</h1>
+  <div id="pat"></div>
+</div></section>
+</main>
+
+<nav>
+  <button data-tab="home" aria-current="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h11M4 17h7"/></svg>Home</button>
+  <button data-tab="today"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M8 3v3M16 3v3M8.5 13l2.5 2.5 4.5-5"/></svg>Today</button>
+  <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-5 3.5 3L20 7"/></svg>History</button>
+  <button data-tab="patterns" style="position:relative"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>Patterns<span id="nb"></span></button>
+</nav>
+<script>
+/* ================= storage ================= */
+const DBN='traininglog', DBV=1;
+let _db;
+function idb(){ return _db ? Promise.resolve(_db) : new Promise((res,rej)=>{
+  const r=indexedDB.open(DBN,DBV);
+  r.onupgradeneeded=e=>{const d=e.target.result;
+    if(!d.objectStoreNames.contains('sets')) d.createObjectStore('sets',{keyPath:'id'});
+    if(!d.objectStoreNames.contains('kv'))   d.createObjectStore('kv',{keyPath:'k'});};
+  r.onsuccess=e=>{_db=e.target.result;res(_db)}; r.onerror=()=>rej(r.error);
+});}
+async function tx(store,mode,fn){const d=await idb();return new Promise((res,rej)=>{
+  const t=d.transaction(store,mode),s=t.objectStore(store);let out;
+  try{out=fn(s)}catch(e){return rej(e)}
+  t.oncomplete=()=>res(out&&out.result!==undefined?out.result:out); t.onerror=()=>rej(t.error);});}
+const kvGet=k=>tx('kv','readonly',s=>s.get(k)).then(r=>r?r.v:undefined);
+const kvSet=(k,v)=>tx('kv','readwrite',s=>s.put({k,v}));
+const allSets=()=>tx('sets','readonly',s=>s.getAll());
+async function putSets(rows){const d=await idb();return new Promise((res,rej)=>{
+  const t=d.transaction('sets','readwrite'),s=t.objectStore('sets');
+  for(const r of rows) s.put(r);
+  t.oncomplete=()=>res(rows.length); t.onerror=()=>rej(t.error);});}
+
+/* ================= seed map: Hevy exercise -> movement name + category =================
+   Category here is only a fallback for rotation counting. Units are NEVER guessed here —
+   they are read from training-state.md. 'cardio' rows are excluded from rotation entirely. */
+const SEED={
+"Incline Bench Press (Dumbbell)":["Incline DB press","push"],
+"Incline Bench Press (Smith Machine)":["Smith incline press","push"],
+"Incline Chest Press (Machine)":["MTS incline chest press","push"],
+"Supine Press":["Supine press","push"],
+"Bench Press (Barbell)":["Bench press (barbell)","push"],
+"Bench Press (Smith Machine)":["Smith bench press","push"],
+"Bench Press (Dumbbell)":["DB bench press","push"],
+"Chest Press (Machine)":["Machine chest press","push"],
+"Chest Fly (Machine)":["Machine chest fly","push"],
+"Butterfly (Pec Deck)":["Pec deck","push"],
+"Cable Fly Crossovers":["Cable fly crossover","push"],
+"Dumbbell Squeeze Press":["DB squeeze press","push"],
+"Decline Push Up":["Decline push-up","push"],
+"Push Up":["Push-up","push"],
+"Pullover (Dumbbell)":["DB pullover","push"],
+"Triceps Dip":["Bodyweight triceps dips","push"],
+"Triceps Dip (Assisted)":["Assisted dips","push"],
+"Chest Dip (Assisted)":["Assisted chest dips","push"],
+"Seated Dip Machine":["Seated dip machine","push"],
+"Triceps Rope Pushdown":["Rope pushdown","push"],
+"Triceps Pressdown":["Triceps pressdown","push"],
+"Triceps Extension (Machine)":["Machine triceps extension","push"],
+"Triceps Extension (Dumbbell)":["DB triceps extension","push"],
+"Shoulder Press (Dumbbell)":["DB shoulder press","push"],
+"Seated Shoulder Press (Machine)":["Seated shoulder press","push"],
+"Shoulder Press (Machine Plates)":["Plate shoulder press","push"],
+"Lateral Raise (Dumbbell)":["DB lateral raise","push"],
+"Lateral Raise (Cable)":["Cable lateral raise","push"],
+"Lat Pulldown (Machine)":["Lat pulldown MTS","pull"],
+"Lat Pulldown (Cable)":["Lat pulldown (cable)","pull"],
+"Lat Pulldown - Close Grip (Cable)":["Lat pulldown close grip","pull"],
+"Pull Up":["Unassisted pull-ups","pull"],
+"Pull Up (Assisted)":["Assisted pull-ups","pull"],
+"Iso-Lateral Row (Machine)":["Iso-lateral row","pull"],
+"Iso-Lateral High Row (Machine)":["Iso-lateral high row","pull"],
+"Seated Cable Row - V Grip (Cable)":["Seated cable row V-grip","pull"],
+"Seated Cable Row - Bar Wide Grip":["Seated cable row wide","pull"],
+"Seated Row (Machine)":["Seated row machine","pull"],
+"Diverging Seated Row":["Diverging seated row","pull"],
+"Dumbbell Row":["DB row","pull"],
+"Face Pull":["Face pull","pull"],
+"Rear Delt Reverse Fly (Machine)":["Rear delt reverse fly","pull"],
+"Rear Delt Reverse Fly (Dumbbell)":["DB rear delt fly","pull"],
+"Shrug (Dumbbell)":["DB shrug","pull"],
+"Preacher Curl (Machine)":["Machine preacher curl","pull"],
+"Seated Incline Curl (Dumbbell)":["Seated incline DB curl","pull"],
+"Cross Body Hammer Curl":["Cross-body hammer curl","pull"],
+"Bicep Curl (Cable)":["Bicep curl (cable)","pull"],
+"Bicep Curl (Dumbbell)":["DB bicep curl","pull"],
+"Rope Cable Curl":["Rope cable curl","pull"],
+"Hammer Curl (Cable)":["Hammer curl (cable)","pull"],
+"Hammer Curl (Dumbbell)":["DB hammer curl","pull"],
+"Behind the Back Curl (Cable)":["Behind-the-back cable curl","pull"],
+"Hack Squat (Machine)":["Hack squat","legs"],
+"Leg Press Horizontal (Machine)":["Leg press horizontal","legs"],
+"Leg Extension (Machine)":["Leg extension","legs"],
+"Seated Leg Curl (Machine)":["Seated leg curl","legs"],
+"Standing Calf Raise (Machine)":["Standing calf raise","legs"],
+"Standing Calf Raise (Dumbbell)":["DB standing calf raise","legs"],
+"Seated Calf Raise":["Seated calf raise","legs"],
+"Calf Extension (Machine)":["Calf extension","legs"],
+"Hip Abduction (Machine)":["Hip abduction","legs"],
+"Hip Adduction (Machine)":["Hip adduction","legs"],
+"Romanian Deadlift (Barbell)":["RDL (barbell)","legs"]
+};
+const CARDIO=/\b(run|running|jog|treadmill|walk|cycl|bike|row(ing)? machine|elliptical|stair|swim|sled push|hike)\b/i;
+
+/* ================= CSV ================= */
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,''); const rows=[]; let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f=''}
+    else if(c==='\n'){row.push(f);f='';rows.push(row);row=[]}
+    else if(c!=='\r') f+=c;
+  }
+  if(f.length||row.length){row.push(f);rows.push(row)}
+  return rows.filter(r=>r.length>1||(r[0]&&r[0].trim()));
+}
+const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+function pick(hdr,...names){for(const n of names){const i=hdr.indexOf(n);if(i>-1)return i}return -1}
+function parseDate(s){
+  s=(s||'').trim(); if(!s) return null;
+  let m=s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4}),?\s+(\d{1,2}):(\d{2})/);
+  if(m){const M={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}[m[2].slice(0,3).toLowerCase()];
+    if(M!==undefined) return new Date(+m[3],M,+m[1],+m[4],+m[5]);}
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+function ingestCSV(text){
+  const rows=parseCSV(text); if(rows.length<2) throw new Error('That file has no rows I can read.');
+  const hdr=rows[0].map(norm);
+  const iEx=pick(hdr,'exercise_title','exercise_name','exercise');
+  const iTs=pick(hdr,'start_time','start','date');
+  if(iEx<0||iTs<0) throw new Error('This does not look like a Hevy export. Expected start_time and exercise_title columns.');
+  const iTitle=pick(hdr,'title','workout_name'), iIdx=pick(hdr,'set_index','set_order'),
+    iType=pick(hdr,'set_type'), iReps=pick(hdr,'reps','repetitions'),
+    iLb=pick(hdr,'weight_lbs','weight_lb'), iKg=pick(hdr,'weight_kg'), iW=pick(hdr,'weight'),
+    iDur=pick(hdr,'duration_seconds','duration'), iNote=pick(hdr,'exercise_notes','notes'),
+    iDm=pick(hdr,'distance_miles'), iDk=pick(hdr,'distance_km','distance_meters','distance');
+  const out=[]; const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null};
+  const exOrder=new Map(), dupe=new Map();
+  for(let r=1;r<rows.length;r++){
+    const c=rows[r]; if(!c[iEx]) continue;
+    const d=parseDate(c[iTs]); if(!d) continue;
+    let w=null;
+    if(iLb>-1&&c[iLb]!=='') w=num(c[iLb]);
+    else if(iKg>-1&&c[iKg]!=='') {const k=num(c[iKg]); w=k===null?null:Math.round(k*2.20462*100)/100}
+    else if(iW>-1) w=num(c[iW]);
+    const dist=(iDm>-1?num(c[iDm]):null) ?? (iDk>-1?num(c[iDk]):null);
+    const idx=iIdx>-1?(num(c[iIdx]) ?? 0):0;
+    const ts=d.getTime(), ex=c[iEx].trim();
+    if(!exOrder.has(ts)) exOrder.set(ts,new Map());
+    const eom=exOrder.get(ts); if(!eom.has(ex)) eom.set(ex,eom.size);
+    const key=ts+'|'+ex+'|'+idx, n=(dupe.get(key)||0); dupe.set(key,n+1);
+    out.push({
+      id:key+'|'+n,
+      ts, ex, eo:eom.get(ex), title:iTitle>-1?c[iTitle]:'',
+      idx, type:(iType>-1?c[iType]:'normal')||'normal',
+      w, reps:iReps>-1?(num(c[iReps]) ?? 0):0,
+      dist, dur:iDur>-1?num(c[iDur]):null,
+      note:iNote>-1?(c[iNote]||''):''
+    });
+  }
+  if(!out.length) throw new Error('Parsed the file but found no sets in it.');
+  return out;
+}
+
+/* ================= training-state.md ================= */
+function parseStateMd(text){
+  const L=text.split(/\r?\n/);
+  const st={movements:[],rules:[],patterns:[],raw:text};
+  let sec='', sub='', hdrMap=null;
+  const cell=l=>l.split('|').slice(1,-1).map(s=>s.trim());
+  for(let i=0;i<L.length;i++){
+    const l=L[i], t=l.trim();
+    if(/^##\s/.test(t)){ sec=t.replace(/^#+\s*/,'').toLowerCase(); sub=''; hdrMap=null; continue }
+    if(/^###\s/.test(t)){ sub=t.replace(/^#+\s*/,'').toLowerCase(); hdrMap=null; continue }
+    if(sec.includes('top set') && /^\|/.test(t)){
+      const cs=cell(t);
+      if(/^[-: |]+$/.test(t.replace(/\|/g,''))) continue;
+      if(!hdrMap){
+        hdrMap={}; cs.forEach((c,j)=>{const n=norm(c);
+          if(n.startsWith('movement'))hdrMap.name=j;
+          else if(n.startsWith('unit'))hdrMap.units=j;
+          else if(n.startsWith('top'))hdrMap.top=j;
+          else if(n==='date')hdrMap.date=j;
+          else if(n.startsWith('next'))hdrMap.next=j;
+          else if(n.startsWith('all_time'))hdrMap.all=j;});
+        if(hdrMap.name===undefined) hdrMap=null;
+        continue;
+      }
+      const g=j=>j===undefined?'':(cs[j]||'').replace(/\*\*/g,'').trim();
+      const name=g(hdrMap.name); if(!name||/^-+$/.test(name)) continue;
+      st.movements.push({name, units:g(hdrMap.units), top:g(hdrMap.top), date:g(hdrMap.date),
+        next:g(hdrMap.next), all:g(hdrMap.all),
+        cat: sub.includes('push')?'push': sub.includes('pull')?'pull': sub.includes('leg')?'legs':''});
+    }
+    if(sec.includes('standing rule')){
+      const m=t.match(/^(\d+)[.)]\s+(.*)$/);
+      if(m) st.rules.push({n:+m[1],text:m[2].replace(/\*\*/g,'')});
+    }
+    if(sec.includes('pattern log')){
+      if(/^[-*]\s+/.test(t)) st.patterns.push(t.replace(/^[-*]\s+/,''));
+      else if(/^\*\*.+\*\*$/.test(t)) st.patterns.push('§'+t.replace(/\*\*/g,''));
+    }
+  }
+  return st;
+}
+const nphrase=s=>(s||'').toLowerCase().replace(/\(.*?\)/g,' ')
+  .replace(/[^a-z]+/g,' ').trim().split(' ')
+  .map(w=>w.length>3?w.replace(/s$/,''):w).join(' ');
+function rulesFor(rules,mvName,allNames){
+  const p=nphrase(mvName); if(!p) return [];
+  const head=p.split(' ').pop();
+  const headCount=(allNames||[]).filter(n=>nphrase(n).split(' ').pop()===head).length;
+  return rules.filter(r=>{
+    const rt=' '+nphrase(r.text)+' ';
+    if(rt.includes(' '+p+' ')) return true;
+    return headCount===1 && head.length>=3 && rt.includes(' '+head+' ');
+  });
+}
+function rulesForDay(rules,cat){
+  const key={push:/push day|push session/,pull:/pull day/,legs:/leg day|leg extension|rdl|run/,upper:/upper day/}[cat];
+  const out=rules.filter(r=>key&&key.test(r.text.toLowerCase()));
+  if(new Date().getHours()<6){ const s=rules.find(r=>/superset/i.test(r.text)); if(s&&!out.includes(s)) out.unshift(s); }
+  return out;
+}
+/* ================= model ================= */
+let SETS=[], STATE=null, UMAP={}, CHECKS={}, MVBY={};
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'2-digit'});
+const daysBetween=(a,b)=>Math.floor((b-a)/864e5);
+const isAssisted=ex=>/assist/i.test(ex);
+const signed=(ex,w)=>w==null?null:(isAssisted(ex)?-Math.abs(w):w);
+
+function movementName(ex){ return (UMAP[ex]&&UMAP[ex].name) || (SEED[ex]&&SEED[ex][0]) || ex; }
+function catOf(ex){
+  if(UMAP[ex]) return UMAP[ex].cat;
+  const nm=movementName(ex);
+  if(MVBY[nm]&&MVBY[nm].cat) return MVBY[nm].cat;
+  if(SEED[ex]) return SEED[ex][1];
+  return null;
+}
+function unitsOf(ex){
+  const m=MVBY[movementName(ex)];
+  if(m&&m.units) return m.units;
+  if(UMAP[ex]&&UMAP[ex].units) return UMAP[ex].units;
+  return null;
+}
+const isCardio=r=>catOf(r.ex)==='cardio' || CARDIO.test(r.ex) || ((r.w==null||r.w===0)&&(r.dist||r.dur));
+const unmapped=()=>[...new Set(SETS.filter(r=>!catOf(r.ex)&&!CARDIO.test(r.ex)).map(r=>r.ex))].sort();
+
+function sessions(){
+  const by=new Map();
+  for(const r of SETS){ if(!by.has(r.ts)) by.set(r.ts,[]); by.get(r.ts).push(r); }
+  const out=[...by.entries()].map(([ts,rows])=>{
+    rows.sort((a,b)=>(a.eo||0)-(b.eo||0)||a.idx-b.idx);
+    const lift=rows.filter(r=>!isCardio(r));
+    const c={push:0,pull:0,legs:0};
+    for(const r of lift){const k=catOf(r.ex); if(c[k]!==undefined)c[k]++;}
+    const n=c.push+c.pull+c.legs;
+    let label=null;
+    if(n){
+      if(c.legs/n>0.6) label='legs';
+      else if(c.push/n>=0.25&&c.pull/n>=0.25) label='upper';
+      else label=c.push>=c.pull?'push':'pull';
+    }
+    return {ts,rows,label,n};
+  }).sort((a,b)=>b.ts-a.ts);
+  return out;
+}
+function rotation(){
+  const ss=sessions(), now=Date.now(), out={};
+  for(const cat of ['push','pull','legs','upper']){
+    const last=ss.find(s=>s.label===cat);
+    out[cat]=last?{days:daysBetween(last.ts,now),ts:last.ts}:{days:null,ts:null};
+  }
+  return out;
+}
+/* working sets only; overshoot = set 1 heavier (signed) than set 2 */
+function exSessions(ex){
+  const by=new Map();
+  for(const r of SETS){ if(r.ex!==ex||r.type==='warmup') continue;
+    if(!by.has(r.ts)) by.set(r.ts,[]); by.get(r.ts).push(r); }
+  return [...by.entries()].map(([ts,rows])=>{
+    rows.sort((a,b)=>a.idx-b.idx);
+    const vals=rows.map(r=>signed(ex,r.w)).filter(v=>v!=null);
+    const over=vals.length>=2 && vals[0]>vals[1];
+    return {ts,rows,top:vals.length?Math.max(...vals):null,over};
+  }).sort((a,b)=>a.ts-b.ts);
+}
+function overshootByMonth(){
+  const by=new Map(), seen=new Map();
+  for(const r of SETS){ if(r.type==='warmup'||isCardio(r)) continue;
+    const k=r.ts+'|'+r.ex; if(!seen.has(k)) seen.set(k,[]); seen.get(k).push(r); }
+  for(const [k,rows] of seen){
+    rows.sort((a,b)=>a.idx-b.idx);
+    const ex=rows[0].ex, vals=rows.map(r=>signed(ex,r.w)).filter(v=>v!=null);
+    if(vals.length>=2&&vals[0]>vals[1]){
+      const d=new Date(rows[0].ts), m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      by.set(m,(by.get(m)||0)+1);
+    }
+  }
+  return [...by.entries()].sort((a,b)=>a[0]<b[0]?-1:1);
+}
+
+/* ================= render: home ================= */
+const COLOR={push:'var(--push)',pull:'var(--pull)',legs:'var(--legs)',upper:'var(--upper)'};
+function renderHome(){
+  const el=document.getElementById('lanes');
+  if(!SETS.length){ el.innerHTML='<div class="empty">No sessions yet. Add your Hevy export below and this fills in.</div>'; }
+  else{
+    const rot=rotation(), MAXD=21;
+    let h='<div class="lanes"><div class="threshold" style="left:calc(92px + (100% - 92px) * '+(10/MAXD)+')"></div>';
+    for(const cat of ['push','pull','legs','upper']){
+      const r=rot[cat], over=r.days!=null&&r.days>10;
+      const pct=r.days==null?0:Math.min(100,r.days/MAXD*100);
+      h+='<div class="lane'+(over?' over':'')+'">'+
+        '<div class="lane-n num">'+(r.days==null?'—':r.days)+'</div>'+
+        '<div class="lane-body"><div class="lane-top"><span class="lane-name">'+cat[0].toUpperCase()+cat.slice(1)+'</span>'+
+        '<span class="lane-date">'+(r.ts?fmtD(r.ts):'never logged')+'</span></div>'+
+        '<div class="lane-bar"><div class="lane-fill" style="width:'+pct+'%;background:'+(over?'var(--alert)':COLOR[cat])+'"></div></div>'+
+        '</div></div>';
+    }
+    el.innerHTML=h+'</div><p class="tiny" style="margin-top:10px">Days since each category. Runs and other cardio never count toward legs.</p>';
+  }
+  /* unmapped mapper */
+  const um=unmapped(), ex=document.getElementById('home-extra');
+  if(um.length){
+    ex.innerHTML='<h2>Unrecognised movements <span class="pill u">'+um.length+'</span></h2>'+
+      '<p class="muted" style="margin:0 0 9px">These are in your export but not in training-state.md. Assign each one so it counts toward rotation.</p>'+
+      um.map(e=>'<div class="card"><div style="font-weight:600;margin-bottom:9px">'+esc(e)+'</div>'+
+        '<div class="row"><select data-um-cat="'+esc(e)+'" style="flex:1;min-width:120px">'+
+        ['','push','pull','legs','cardio'].map(c=>'<option value="'+c+'">'+(c?c[0].toUpperCase()+c.slice(1):'Pick a category')+'</option>').join('')+
+        '</select><select data-um-u="'+esc(e)+'" style="flex:1;min-width:120px">'+
+        [['','Pick units'],['TOTAL','Total, both hands'],['PER ARM','Per arm'],['PER SIDE','Per side'],
+         ['machine','Machine stack'],['cable','Cable stack'],['BW','Bodyweight'],['assist','Assistance']]
+         .map(u=>'<option value="'+u[0]+'">'+u[1]+'</option>').join('')+'</select></div></div>').join('')+
+      '<button class="btn wide" id="um-save">Save these</button>';
+    ex.querySelector('#um-save').onclick=async()=>{
+      ex.querySelectorAll('[data-um-cat]').forEach(s=>{
+        const e=s.getAttribute('data-um-cat'), u=ex.querySelector('[data-um-u="'+CSS.escape(e)+'"]');
+        if(s.value) UMAP[e]={cat:s.value,units:u?u.value:'',name:e};
+      });
+      await kvSet('usermap',UMAP); renderAll();
+    };
+  } else ex.innerHTML='';
+  document.getElementById('nb').innerHTML = um.length?'<span class="badge">'+um.length+'</span>':'';
+
+  /* imports */
+  const last=SETS.length?Math.max(...SETS.map(r=>r.ts)):null;
+  document.getElementById('imports').innerHTML=
+    dropHTML('csv','Hevy export','Profile → Settings → Export &amp; Import Data',
+      SETS.length?'<span class="ok">'+SETS.length.toLocaleString()+' sets stored</span> · newest '+fmtD(last):'Nothing stored yet')+
+    dropHTML('md','training-state.md','Top sets, standing rules, pattern log',
+      STATE?'<span class="ok">'+STATE.movements.length+' movements · '+STATE.rules.length+' rules · '+STATE.patterns.length+' log entries</span>':'Nothing stored yet');
+  wireDrops();
+  document.getElementById('stats').textContent =
+    SETS.length? sessions().length+' sessions stored on this device. Nothing is uploaded anywhere.' : '';
+}
+function dropHTML(kind,title,sub,status){
+  return '<div class="drop" data-drop="'+kind+'"><h3>'+title+'</h3><p>'+sub+'</p>'+
+    '<label class="btn" for="f-'+kind+'">Choose file</label>'+
+    '<input type="file" id="f-'+kind+'">'+
+    '<p class="tiny" style="margin:9px 0 0" id="st-'+kind+'">'+status+'</p></div>';
+}
+/* ================= render: today ================= */
+let DAYCAT=null;
+function cardMovements(cat){
+  const last=sessions().find(s=>s.label===cat);
+  if(last){
+    const seen=[],order=[];
+    for(const r of last.rows){ if(isCardio(r)) continue; if(!seen.includes(r.ex)){seen.push(r.ex);order.push(r.ex)} }
+    return {from:fmtD(last.ts), list:order.map(ex=>({ex,name:movementName(ex),mv:MVBY[movementName(ex)]||null}))};
+  }
+  if(STATE){ const l=STATE.movements.filter(m=>m.cat===cat);
+    if(l.length) return {from:null,list:l.map(m=>({ex:m.name,name:m.name,mv:m}))}; }
+  return {from:null,list:[]};
+}
+function renderToday(){
+  const wrap=document.getElementById('card');
+  document.querySelectorAll('#daypick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cat===DAYCAT));
+  if(!DAYCAT){ wrap.innerHTML='<div class="empty">Pick a day type to build the card.</div>'; return }
+  if(!SETS.length&&!STATE){ wrap.innerHTML='<div class="empty">Add your Hevy export and training-state.md on the Home tab first.</div>'; return }
+  const {from,list}=cardMovements(DAYCAT);
+  if(!list.length){ wrap.innerHTML='<div class="empty">No '+DAYCAT+' session in your export yet, and training-state.md has no '+DAYCAT+' movements.</div>'; return }
+  let dayRules=STATE?rulesForDay(STATE.rules,DAYCAT):[];
+  const ALLNAMES=STATE?STATE.movements.map(m=>m.name):[];
+  const rdlMissing = DAYCAT==='legs' && !list.some(x=>/rdl|romanian/i.test(x.name));
+  if(rdlMissing) dayRules=dayRules.filter(r=>!/rdl|romanian/i.test(r.text));
+  const shown=new Set(dayRules.map(r=>r.n));
+  let h='';
+  if(dayRules.length) h+=dayRules.map(r=>'<div class="rule hard"><span class="num">'+r.n+'</span><span>'+esc(r.text)+'</span></div>').join('');
+  if(rdlMissing&&STATE){
+    const r4=STATE.rules.find(r=>/rdl|romanian/i.test(r.text));
+    h+='<div class="rule hard"><span class="num">'+(r4?r4.n:'!')+'</span><span>No RDL on this card. They are mandatory on leg day.</span></div>';
+    if(r4) shown.add(r4.n);
+  }
+  h+=list.map((x,i)=>{
+    const mv=x.mv, done=!!CHECKS[DAYCAT+'|'+x.ex];
+    const units=unitsOf(x.ex);
+    const rs=(STATE?rulesFor(STATE.rules,x.name,ALLNAMES):[]).filter(r=>!shown.has(r.n));
+    return '<div class="mv'+(done?' done':'')+'" data-mv="'+esc(x.ex)+'">'+
+      '<button class="mv-main"><span class="tick"></span><span style="flex:1;min-width:0">'+
+        '<span class="mv-name">'+esc(x.name)+'</span>'+
+        '<div class="mv-target num">'+esc(mv&&mv.next?mv.next:'no target set')+'</div>'+
+        '<div class="mv-meta">'+(mv&&mv.top?'last '+esc(mv.top)+(mv.date?' · '+esc(mv.date):''):'not in training-state.md')+
+          (units?' <span class="pill">'+esc(units)+'</span>':' <span class="pill u">units unknown</span>')+'</div>'+
+      '</span></button>'+
+      (rs.length?'<div class="mv-rules">'+rs.map(r=>'<div class="rule"><span class="num">'+r.n+'</span><span>'+esc(r.text)+'</span></div>').join('')+'</div>':'')+
+    '</div>';
+  }).join('');
+  h+='<p class="tiny" style="margin-top:12px">'+(from?'Order taken from your last '+DAYCAT+' session, '+from+'.':'Order taken from training-state.md.')+' Ticks clear at midnight.</p>';
+  wrap.innerHTML=h;
+  wrap.querySelectorAll('.mv-main').forEach(b=>b.onclick=async()=>{
+    const box=b.closest('.mv'), k=DAYCAT+'|'+box.dataset.mv;
+    CHECKS[k]=!CHECKS[k]; box.classList.toggle('done',CHECKS[k]);
+    await kvSet('checks',{day:todayKey(),v:CHECKS});
+  });
+}
+
+/* ================= render: history ================= */
+function movementOptions(){
+  const by=new Map();
+  for(const r of SETS){ if(isCardio(r))continue; const c=by.get(r.ex)||{n:0,last:0}; c.n++; c.last=Math.max(c.last,r.ts); by.set(r.ex,c) }
+  return [...by.entries()].sort((a,b)=>b[1].last-a[1].last).map(([ex,c])=>({ex,n:c.n,last:c.last}));
+}
+function chartSVG(pts){
+  const W=720,H=210,PL=46,PR=12,PT=14,PB=26;
+  if(!pts.length) return '';
+  const xs=pts.map(p=>p.ts), ys=pts.map(p=>p.v);
+  let y0=Math.min(...ys), y1=Math.max(...ys);
+  if(y0===y1){y0-=5;y1+=5}
+  const pad=(y1-y0)*0.12; y0-=pad; y1+=pad;
+  const x0=Math.min(...xs), x1=Math.max(...xs);
+  const X=t=>PL+(x1===x0?0.5:(t-x0)/(x1-x0))*(W-PL-PR);
+  const Y=v=>PT+(1-(v-y0)/(y1-y0))*(H-PT-PB);
+  let g='';
+  for(let i=0;i<=2;i++){const v=y0+(y1-y0)*i/2, y=Y(v);
+    g+='<line x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'" stroke="#2B3742" stroke-width="1" vector-effect="non-scaling-stroke"/>'+
+       '<text x="'+(PL-7)+'" y="'+(y+4)+'" fill="#5C6D7C" font-size="12" text-anchor="end" font-family="ui-monospace,monospace">'+Math.round(v)+'</text>';}
+  const d=pts.map((p,i)=>(i?'L':'M')+X(p.ts).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
+  let c='';
+  pts.forEach(p=>{ c+='<circle cx="'+X(p.ts).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(p.over?5.5:4)+'" fill="'+(p.over?'#E8574B':'#4FBFA4')+'"/>'; });
+  const lab='<text x="'+PL+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="11" font-family="ui-monospace,monospace">'+fmtD(x0)+'</text>'+
+    '<text x="'+(W-PR)+'" y="'+(H-6)+'" fill="#5C6D7C" font-size="11" text-anchor="end" font-family="ui-monospace,monospace">'+fmtD(x1)+'</text>';
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+g+
+    '<path d="'+d+'" fill="none" stroke="#3D5464" stroke-width="2" vector-effect="non-scaling-stroke"/>'+c+lab+'</svg>';
+}
+function renderHistory(){
+  const sel=document.getElementById('mvpick'), box=document.getElementById('hist');
+  const opts=movementOptions();
+  if(!opts.length){ sel.innerHTML=''; sel.style.display='none';
+    box.innerHTML='<div class="empty">Add your Hevy export on the Home tab and every movement shows up here.</div>'; return }
+  sel.style.display='';
+  const keep=sel.value;
+  sel.innerHTML=opts.map(o=>'<option value="'+esc(o.ex)+'">'+esc(movementName(o.ex))+' — '+o.n+' sets</option>').join('');
+  if(keep&&opts.some(o=>o.ex===keep)) sel.value=keep;
+  const ex=sel.value, es=exSessions(ex).filter(s=>s.top!=null);
+  const units=unitsOf(ex), assisted=isAssisted(ex);
+  if(!es.length){ box.innerHTML='<div class="empty">No weighted working sets recorded for this one.</div>'; return }
+  const pts=es.map(s=>({ts:s.ts,v:s.top,over:s.over}));
+  const overN=es.filter(s=>s.over).length;
+  box.innerHTML=
+    '<div style="margin:14px 0 2px"><span class="pill">'+esc(units||'units unknown')+'</span>'+
+      (assisted?' <span class="pill">less assistance is higher</span>':'')+'</div>'+
+    chartSVG(pts)+
+    '<div class="legend"><span><span class="dot" style="background:#4FBFA4"></span>top set</span>'+
+      '<span><span class="dot" style="background:#E8574B"></span>set 1 heavier than set 2 ('+overN+')</span></div>'+
+    '<div class="sesslist">'+es.slice().reverse().map(s=>
+      '<div class="sess'+(s.over?' flag':'')+'"><span class="d">'+fmtD(s.ts)+'</span><span class="s">'+
+      s.rows.map(r=>(r.w==null?'BW':(assisted?'-'+Math.abs(r.w):r.w))+'×'+r.reps).join('  ')+'</span></div>').join('')+'</div>';
+}
+
+/* ================= render: patterns ================= */
+function renderPatterns(){
+  const box=document.getElementById('pat');
+  let h='';
+  const om=overshootByMonth().slice(-12);
+  if(om.length){
+    const mx=Math.max(...om.map(m=>m[1]));
+    h+='<h2>Overshoot by month</h2><p class="muted" style="margin:0 0 4px">Times set 1 was heavier than set 2.</p><div class="bars">'+
+      om.map(([m,n])=>'<div class="bcol"><span class="bnum">'+n+'</span>'+
+        '<div class="bfill" style="height:'+(n/mx*80)+'px"></div>'+
+        '<span class="blab">'+m+'</span></div>').join('')+'</div>';
+  }
+  if(STATE&&STATE.patterns.length){
+    h+='<h2>Pattern log</h2>';
+    let open=false;
+    for(const p of STATE.patterns){
+      if(p[0]==='§'){ if(open){h+='</ul>';open=false} h+='<h3 style="font-size:14px;color:var(--warn);margin:18px 0 2px;font-weight:600">'+esc(p.slice(1))+'</h3>' }
+      else { if(!open){h+='<ul class="log">';open=true} h+='<li>'+esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</li>' }
+    }
+    if(open) h+='</ul>';
+  }
+  if(!h) h='<div class="empty">Add training-state.md and your Hevy export on the Home tab.</div>';
+  box.innerHTML=h;
+}
+
+/* ================= files ================= */
+async function handleFile(file,kind){
+  const st=document.getElementById('st-'+kind);
+  try{
+    const text=await file.text();
+    if(kind==='csv'){
+      const rows=ingestCSV(text); await putSets(rows); SETS=await allSets();
+      if(st) st.innerHTML='<span class="ok">Added '+rows.length.toLocaleString()+' sets</span>';
+    } else {
+      STATE=parseStateMd(text);
+      if(!STATE.movements.length&&!STATE.rules.length) throw new Error('No CURRENT TOP SETS table or STANDING RULES found in that file.');
+      MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m);
+      await kvSet('state',STATE);
+      if(st) st.innerHTML='<span class="ok">Loaded '+STATE.movements.length+' movements</span>';
+    }
+    renderAll();
+  }catch(e){ if(st) st.innerHTML='<span style="color:var(--alert)">'+esc(e.message)+'</span>'; }
+}
+function wireDrops(){
+  document.querySelectorAll('[data-drop]').forEach(d=>{
+    const kind=d.dataset.drop, inp=d.querySelector('input[type=file]');
+    inp.onchange=e=>{const f=e.target.files[0]; if(f) handleFile(f,kind); e.target.value=''};
+    ['dragenter','dragover'].forEach(v=>d.addEventListener(v,e=>{e.preventDefault();d.classList.add('hot')}));
+    ['dragleave','drop'].forEach(v=>d.addEventListener(v,e=>{e.preventDefault();d.classList.remove('hot')}));
+    d.addEventListener('drop',e=>{const f=e.dataTransfer.files[0]; if(f) handleFile(f,kind)});
+  });
+}
+async function doBackup(){
+  const blob=new Blob([JSON.stringify({v:1,sets:SETS,state:STATE,usermap:UMAP})],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='training-backup-'+todayKey()+'.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+async function doRestore(file){
+  try{ const j=JSON.parse(await file.text());
+    if(j.sets) { await putSets(j.sets); SETS=await allSets(); }
+    if(j.state){ STATE=j.state; MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); await kvSet('state',STATE); }
+    if(j.usermap){ UMAP=j.usermap; await kvSet('usermap',UMAP); }
+    renderAll();
+  }catch(e){ alert('That backup file could not be read.') }
+}
+
+/* ================= shell ================= */
+function renderAll(){ renderHome(); renderToday(); renderHistory(); renderPatterns(); }
+function show(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+tab));
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+document.querySelectorAll('#daypick button').forEach(b=>b.onclick=()=>{DAYCAT=b.dataset.cat;renderToday()});
+document.getElementById('mvpick').onchange=renderHistory;
+document.getElementById('backup').onclick=doBackup;
+document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f)doRestore(f);e.target.value=''};
+
+(async function boot(){
+  try{
+    SETS=await allSets();
+    STATE=await kvGet('state')||null;
+    if(STATE){ MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); }
+    UMAP=await kvGet('usermap')||{};
+    const c=await kvGet('checks');
+    CHECKS=(c&&c.day===todayKey())?c.v:{};
+    if(c&&c.day!==todayKey()) await kvSet('checks',{day:todayKey(),v:{}});
+  }catch(e){}
+  renderAll();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
