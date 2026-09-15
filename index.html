@@ -69,7 +69,7 @@ h3{font-size:15px;font-weight:600;margin:18px 0 6px}
 .btn.wide{display:block;width:100%;text-align:center;margin-top:10px}
 .btn.go{background:#1d3a45;border-color:#2d5b6b;color:#bfe9f5}
 .row{display:flex;gap:8px;flex-wrap:wrap}
-select,textarea,input[type=date]{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:16px;width:100%;-webkit-appearance:none;appearance:none;font-family:inherit}
+select,textarea,input[type=date],input[type=text],input[type=password]{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:16px;width:100%;-webkit-appearance:none;appearance:none;font-family:inherit}
 textarea{min-height:150px;font-family:var(--mono);line-height:1.5}
 
 /* segmented — big targets */
@@ -184,6 +184,17 @@ nav svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;st
     </select>
   </div>
   <button class="btn go wide" id="pastego">Check session</button>
+  <h2>Save to GitHub</h2>
+  <div class="card" id="ghcard">
+    <p class="muted" style="margin:0 0 10px">Pasted sessions get saved to your repo, so they're not only on this phone.</p>
+    <input type="text" id="ghrepo" placeholder="owner/repo" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input type="password" id="ghtoken" placeholder="GitHub key (github_pat_…)" autocomplete="off" style="margin-top:8px">
+    <div class="row" style="margin-top:4px">
+      <button class="btn" id="ghsave" style="flex:1">Connect</button>
+      <button class="btn" id="ghoff" style="flex:1">Disconnect</button>
+    </div>
+    <p class="tiny" id="ghstat" style="margin:10px 0 0"></p>
+  </div>
   <h2>Files</h2>
   <div id="imports"></div>
   <button class="btn wide" id="backup">Save a backup file</button>
@@ -642,6 +653,8 @@ const mdD=ts=>{const d=new Date(ts);return String(d.getMonth()+1).padStart(2,'0'
 const dayOf=ts=>{const d=new Date(ts);return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())};
 const daysBetween=(a,b)=>Math.round((dayOf(b)-dayOf(a))/864e5);
 const isAssisted=ex=>/assist/i.test(ex);
+const dayK=ts=>{const d=new Date(ts);return d.getFullYear()*1e4+(d.getMonth()+1)*100+d.getDate()};
+const isPasted=r=>r.src==='paste'||(!!r.lab&&r.src!=='csv');
 const signed=(ex,w)=>w==null?null:(isAssisted(ex)?-Math.abs(w):w);
 const showW=(ex,w)=>w==null?'BW':(isAssisted(ex)?'-'+Math.abs(w):String(w));
 function ago(ts){
@@ -994,7 +1007,7 @@ function renderLog(){
   const dy=document.getElementById('pasteday');
   if(dy&&!DAYTOUCHED&&SETS.length) dy.value=biggestGap()||'';
   document.getElementById('stats').textContent =
-    SETS.length? sessions().length+' sessions on this device. Nothing is uploaded.' : '';
+    SETS.length? sessions().length+' sessions on this device.'+(GH&&GH.token?' Pasted sessions save to GitHub.':' Pasted sessions stay on this phone.') : '';
   renderResult();
 }
 function dropHTML(kind,title,sub,status){
@@ -1007,6 +1020,8 @@ function renderResult(){
   const box=document.getElementById('logresult');
   if(!LASTRESULT){ box.innerHTML=''; return }
   const R=LASTRESULT; let h='<h2>'+fmtD(R.ts)+' · '+R.count+' movements</h2>';
+  if(R.sync) h+='<p class="tiny '+(R.sync==='saved'?'ok':R.sync==='failed'?'bad':'')+'" style="margin:0 0 8px">'+
+    (R.sync==='saved'?'Saved to GitHub.':R.sync==='failed'?'Not saved to GitHub. '+esc(GHSTAT):'Saving to GitHub…')+'</p>';
   if(R.notes&&R.notes.length) h+=R.notes.map(n=>
     '<div class="res"><div class="h">'+esc(n.name)+'</div><div class="b" style="color:var(--warn)">"'+esc(n.note)+'"</div></div>').join('');
   if(!R.down.length&&!R.crash.length) h+='<div class="res"><div class="h">Nothing regressed.</div></div>';
@@ -1159,7 +1174,6 @@ function renderRuns(){
    different timestamp (paste = noon or share time). Carry the day label onto
    the export's session and drop the pasted copy so it isn't counted twice. */
 async function mergeCSV(rows){
-  const dayK=ts=>{const d=new Date(ts);return d.getFullYear()*1e4+(d.getMonth()+1)*100+d.getDate()};
   const csvTs=new Map();
   for(const r of rows){const k=dayK(r.ts); if(!csvTs.has(k)) csvTs.set(k,new Set()); csvTs.get(k).add(r.ts)}
   const labByTs=new Map(), drop=[];
@@ -1174,6 +1188,7 @@ async function mergeCSV(rows){
   const out=rows.map(r=>{const l=labByTs.get(r.ts); return l?{...r,src:'csv',lab:l}:{...r,src:'csv'}});
   if(drop.length) await delSets(drop);
   await putSets(out); SETS=await allSets();
+  if(drop.length) await syncPasted();      /* shrink data/pasted.json */
   return {dropped:drop.length};
 }
 async function handleFile(file,kind){
@@ -1271,7 +1286,13 @@ async function commitPasted(){
   REPO.importedAt=Date.now(); await kvSet('repo',REPO);
   PENDING=null; DAYTOUCHED=false;
   document.getElementById('paste').value='';
+  LASTRESULT.sync = GH&&GH.token ? 'saving' : null;
   renderAll(); show('log');
+  if(GH&&GH.token){
+    const ok=await syncPasted();
+    if(LASTRESULT) LASTRESULT.sync = ok?'saved':'failed';
+    renderResult(); renderGH();
+  }
 }
 async function doBackup(){
   const blob=new Blob([JSON.stringify({v:2,sets:SETS,runs:RUNS,state:STATE,usermap:UMAP})],{type:'application/json'});
@@ -1313,6 +1334,15 @@ async function loadFromRepo(){
           REPO.mdSig=s; REPO.importedAt=Date.now(); changed=true; } } }
   }catch(e){}
   try{
+    const r=await fetch('./data/pasted.json',{cache:'no-cache'});
+    if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
+      if(s!==REPO.pasteSig){ const j=JSON.parse(t);
+        const have=new Set(SETS.filter(x=>!isPasted(x)).map(x=>dayK(x.ts)));
+        const add=(j.rows||[]).filter(x=>x&&x.id&&!have.has(dayK(x.ts))).map(x=>({...x,src:'paste'}));
+        if(add.length){ await putSets(add); SETS=await allSets(); changed=true }
+        REPO.pasteSig=s; } }
+  }catch(e){}
+  try{
     const r=await fetch('./data/activities.csv',{cache:'no-cache'});
     if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
       if(s!==REPO.stravaSig){ await putRuns(ingestStrava(t)); RUNS=await allRuns();
@@ -1322,8 +1352,86 @@ async function loadFromRepo(){
   return changed;
 }
 
+/* ================= GitHub sync =================
+   Pasted sessions are written to data/pasted.json in the repo. The key never
+   leaves this device except in requests to api.github.com, and is not in backups. */
+let GH=null, GHSTAT='';
+function guessRepo(){
+  const h=location.hostname, seg=location.pathname.split('/').filter(Boolean)[0];
+  return /\.github\.io$/.test(h)&&seg ? h.split('.')[0]+'/'+seg : '';
+}
+function b64(text){
+  const b=new TextEncoder().encode(text); let o='';
+  for(let i=0;i<b.length;i+=0x8000) o+=String.fromCharCode(...b.subarray(i,i+0x8000));
+  return btoa(o);
+}
+function ghErr(code){
+  if(code===401) return 'GitHub says the key is wrong or expired. Make a new one and connect again.';
+  if(code===403||code===404) return 'That key can\'t write to '+GH.repo+'. Check the repo name and that the key has Contents: Read and write.';
+  return 'GitHub error '+code+'. Will try again next time you open the app.';
+}
+async function ghPut(path,text,msg){
+  const url='https://api.github.com/repos/'+GH.repo+'/contents/'+path;
+  const hd={'Authorization':'Bearer '+GH.token,'Accept':'application/vnd.github+json'};
+  for(let tries=0;tries<2;tries++){
+    const g=await fetch(url,{headers:hd,cache:'no-store'});
+    let sha=null;
+    if(g.ok) sha=(await g.json()).sha;
+    else if(g.status!==404) throw new Error(ghErr(g.status));
+    const body={message:msg,content:b64(text)}; if(sha) body.sha=sha;
+    const r=await fetch(url,{method:'PUT',headers:hd,body:JSON.stringify(body)});
+    if(r.ok) return;
+    if(r.status!==409&&r.status!==422) throw new Error(ghErr(r.status));   /* 409/422: file changed, retry */
+  }
+  throw new Error('GitHub kept rejecting the save. Will try again next time you open the app.');
+}
+async function syncPasted(){
+  if(!GH||!GH.token) return null;
+  const rows=SETS.filter(isPasted).sort((a,b)=>a.ts-b.ts||a.eo-b.eo||a.idx-b.idx)
+    .map(r=>({...r,src:'paste'}));
+  const text=JSON.stringify({v:1,rows});
+  const s=sig(text);
+  if(s===await kvGet('ghSig')){ await kvSet('ghDirty',false); return true }
+  try{
+    const n=new Set(rows.map(r=>r.ts)).size;
+    await ghPut('data/pasted.json',text,'Pasted sessions ('+n+')');
+    await kvSet('ghSig',s); await kvSet('ghDirty',false);
+    REPO.pasteSig=''; await kvSet('ghAt',Date.now());
+    GHSTAT='';
+    return true;
+  }catch(e){
+    await kvSet('ghDirty',true);
+    GHSTAT=e.message||'Couldn\'t reach GitHub. Will try again next time you open the app.';
+    return false;
+  }
+}
+async function renderGH(){
+  const st=document.getElementById('ghstat'); if(!st) return;
+  const repo=document.getElementById('ghrepo'), tok=document.getElementById('ghtoken');
+  if(!repo.value) repo.value=(GH&&GH.repo)||guessRepo();
+  tok.placeholder=GH&&GH.token?'Key saved on this phone':'GitHub key (github_pat_…)';
+  document.getElementById('ghoff').style.display=GH&&GH.token?'':'none';
+  if(!GH||!GH.token){ st.innerHTML='Not connected. Pasted sessions stay on this phone only.'; return }
+  const dirty=await kvGet('ghDirty'), at=await kvGet('ghAt');
+  st.innerHTML = GHSTAT ? '<span class="bad">'+esc(GHSTAT)+'</span>'
+    : dirty ? '<span class="bad">Not saved yet. Will try again next time you open the app.</span>'
+    : '<span class="ok">Connected to '+esc(GH.repo)+'</span>'+(at?'. Last saved '+ago(at)+'.':'.');
+}
+async function connectGH(){
+  const repo=document.getElementById('ghrepo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,'');
+  const token=document.getElementById('ghtoken').value.trim() || (GH&&GH.token) || '';
+  const st=document.getElementById('ghstat');
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ st.innerHTML='<span class="bad">Repo should look like owner/repo.</span>'; return }
+  if(!token){ st.innerHTML='<span class="bad">Paste your GitHub key first.</span>'; return }
+  GH={repo,token}; GHSTAT=''; await kvSet('gh',GH); await kvSet('ghSig','');
+  document.getElementById('ghtoken').value='';
+  st.textContent='Saving…';
+  await syncPasted(); renderGH();
+}
+async function disconnectGH(){ GH=null; GHSTAT=''; await kvSet('gh',null); renderGH(); }
+
 /* ================= shell ================= */
-function renderAll(){ renderHome(); renderToday(); renderLog(); renderTrends(); renderRuns(); }
+function renderAll(){ renderHome(); renderToday(); renderLog(); renderTrends(); renderRuns(); renderGH(); }
 function show(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+tab));
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab));
@@ -1333,6 +1441,8 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.
 document.querySelectorAll('#daypick button').forEach(b=>b.onclick=()=>{DAYCAT=b.dataset.cat;renderToday()});
 document.getElementById('mvpick').onchange=renderTrends;
 document.getElementById('backup').onclick=doBackup;
+document.getElementById('ghsave').onclick=connectGH;
+document.getElementById('ghoff').onclick=disconnectGH;
 document.getElementById('pastego').onclick=checkPasted;
 document.getElementById('pasteday').onchange=()=>{DAYTOUCHED=true};
 document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f)doRestore(f);e.target.value=''};
@@ -1344,6 +1454,7 @@ document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f
     if(STATE){ MVBY={}; STATE.movements.forEach(m=>MVBY[m.name]=m); }
     UMAP=await kvGet('usermap')||{};
     REPO=await kvGet('repo')||REPO;
+    GH=await kvGet('gh')||null;
     const c=await kvGet('checks');
     CHECKS=(c&&c.day===todayKey())?c.v:{};
     if(c&&c.day!==todayKey()) await kvSet('checks',{day:todayKey(),v:{}});
@@ -1355,6 +1466,7 @@ document.getElementById('f-restore').onchange=e=>{const f=e.target.files[0];if(f
   const changed=await loadFromRepo();
   await updateStorageStatus();
   if(changed) renderAll(); else renderHome();
+  if(GH&&GH.token&&await kvGet('ghDirty')){ await syncPasted(); renderGH(); }
 })();
 </script>
 </body>
