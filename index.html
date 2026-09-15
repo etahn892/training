@@ -241,6 +241,10 @@ async function putRows(store,rows){const d=await idb();return new Promise((res,r
   for(const r of rows) s.put(r);
   t.oncomplete=()=>res(rows.length); t.onerror=()=>rej(t.error);});}
 const putSets=r=>putRows('sets',r), putRuns=r=>putRows('runs',r);
+async function delSets(ids){const d=await idb();return new Promise((res,rej)=>{
+  const t=d.transaction('sets','readwrite'),s=t.objectStore('sets');
+  for(const id of ids) s.delete(id);
+  t.oncomplete=()=>res(ids.length); t.onerror=()=>rej(t.error);});}
 
 /* ================= seed map =================
    Category is a fallback for rotation counting only. Units are NEVER guessed
@@ -474,7 +478,7 @@ function parseHevyShare(text,dateStr){
   if(!when) base.setHours(12,0,0,0);
   const ts=base.getTime();
   const out=[], skipped=[], exs=[];
-  let pending=null, pendingNote='', cur=null, eo=0;
+  let pending=null, pendingNote='', cur=null, eo=0; const dupe=new Map();
   for(;i<lines.length;i++){
     const line=lines[i]; if(!line) continue;
     const sm=line.match(SETLINE);
@@ -490,7 +494,9 @@ function parseHevyShare(text,dateStr){
       if(!v){ skipped.push(line+' — could not read weight or reps'); continue }
       /* Hevy writes assistance as positive; the file convention is negative */
       const w=v.w==null?null:(cur.assisted?-Math.abs(v.w):v.w);
-      out.push({id:ts+'|'+cur.ex+'|'+cur.n+'|0', ts, ex:cur.ex, eo:cur.eo, title:title||'Pasted',
+      /* same exercise twice in one workout: suffix like the CSV importer, don't overwrite */
+      const key=ts+'|'+cur.ex+'|'+cur.n, dn=dupe.get(key)||0; dupe.set(key,dn+1);
+      out.push({id:key+'|'+dn, ts, ex:cur.ex, eo:cur.eo, title:title||'Pasted',
         idx:cur.n, type:'normal', w, reps:v.reps, dist:null, dur:null, note:cur.note});
       cur.n++;
       continue;
@@ -697,18 +703,20 @@ function exSessions(ex){
     if(!by.has(r.ts)) by.set(r.ts,[]); by.get(r.ts).push(r); }
   return [...by.entries()].map(([ts,rows])=>{
     rows.sort((a,b)=>a.idx-b.idx);
-    const raw=rows.map(r=>({w:signed(ex,r.w),reps:r.reps}));
+    const raw=rows.map(r=>({w:signed(ex,r.w),reps:r.reps,type:r.type}));
     const bw=raw.length>0&&raw.every(x=>x.w==null);          /* dips, pull-ups: reps are the load */
     const v=bw?raw:raw.filter(x=>x.w!=null);
     let top=null;
     for(const x of v) if(!top|| (bw ? x.reps>top.reps : (x.w>top.w||(x.w===top.w&&x.reps>top.reps)))) top=x;
-    return {ts,rows,top,over:bw?null:overshoot(v),vals:v,bw};
+    return {ts,rows,top,over:bw?null:overshoot(noDrop(v)),vals:v,bw};
   }).sort((a,b)=>a.ts-b.ts);
 }
 /* OVERSHOOT — definition changed from the old "set 1 heavier than set 2".
    (a) descend-after-peak: the set right after the heaviest is lighter AND at fewer reps
    (b) peak-too-heavy:     a later lighter set beat the peak's reps by >=1/0.6
    (b) is what catches ramp-then-crash, which (a) and the old rule both miss. */
+/* drop sets descend on purpose — never count them as a crash */
+const noDrop=v=>v.filter(x=>x.type!=='dropset');
 function overshoot(v){
   if(v.length<2) return null;
   let pi=0; for(let i=1;i<v.length;i++) if(v[i].w>v[pi].w||(v[i].w===v[pi].w&&v[i].reps>v[pi].reps)) pi=i;
@@ -720,7 +728,7 @@ function overshoot(v){
 }
 function overshootByMonth(){
   const by=new Map(), tot=new Map(), seen=new Map();
-  for(const r of SETS){ if(r.type==='warmup'||isCardio(r)) continue;
+  for(const r of SETS){ if(r.type==='warmup'||r.type==='dropset'||isCardio(r)) continue;
     const k=r.ts+'|'+r.ex; if(!seen.has(k)) seen.set(k,[]); seen.get(k).push(r); }
   for(const [k,rows] of seen){
     rows.sort((a,b)=>a.idx-b.idx);
@@ -759,14 +767,14 @@ function evaluateSession(ts){
   const down=[],up=[],tgt=[],crash=[];
   for(const [ex,rs] of byEx){
     rs.sort((a,b)=>a.idx-b.idx);
-    const raw=rs.map(r=>({w:signed(ex,r.w),reps:r.reps}));
+    const raw=rs.map(r=>({w:signed(ex,r.w),reps:r.reps,type:r.type}));
     const bw=raw.length>0&&raw.every(x=>x.w==null);
     const v=bw?raw:raw.filter(x=>x.w!=null);
     let top=null; for(const x of v) if(!top|| (bw ? x.reps>top.reps : (x.w>top.w||(x.w===top.w&&x.reps>top.reps)))) top=x;
     const es=exSessions(ex).filter(s=>s.ts<ts);
     const prev=es.length?es[es.length-1]:null;
     const name=movementName(ex);
-    const o=bw?null:overshoot(v); if(o) crash.push({name,ex,o,v});
+    const o=bw?null:overshoot(noDrop(v)); if(o) crash.push({name,ex,o,v});
     if(top&&prev&&prev.top){
       const d=bw?0:(top.w-prev.top.w), dr=top.reps-prev.top.reps;
       if(d<0||(d===0&&dr<0)) down.push({name,ex,now:top,was:prev.top,ts:prev.ts,d,dr});
@@ -776,8 +784,9 @@ function evaluateSession(ts){
     if(mv&&top){
       const t=parseTarget(mv.next,mv.units);
       if(t&&t.w!=null){
-        const hit = top.w>t.w || (top.w===t.w&&top.reps>=t.reps);
-        const beat= top.w>t.w || (top.w===t.w&&top.reps>t.reps);
+        const tw=signed(ex,t.w);   /* file writes assistance positive; top is signed */
+        const hit = top.w>tw || (top.w===tw&&top.reps>=t.reps);
+        const beat= top.w>tw || (top.w===tw&&top.reps>t.reps);
         tgt.push({name,target:mv.next,t,top,hit,beat});
       } else if(mv.next) tgt.push({name,target:mv.next,t:null,top,hit:null});
     }
@@ -798,7 +807,6 @@ function buildDiff(){
       ? t.last.vals.map(x=>x.reps).join(', ')
       : Math.abs(t.last.top.w)+' × '+t.last.top.reps;
     const newDate=mdD(t.last.ts);
-    const oldTop=mv.top.replace(/\s*[×x]\s*\d+\s*$/,m=>m); /* keep any ×N suffix for comparison */
     const suffix=(mv.top.match(/\s[×x]\d+$/)||[''])[0];
     const sameTop=mv.top.replace(/\s+/g,'')===(newTop+suffix).replace(/\s+/g,'');
     const sameDate=mv.date.endsWith(newDate);
@@ -806,7 +814,7 @@ function buildDiff(){
     const disputed=[];
     if(t.last.over) disputed.push('that top set crashed after ('+t.last.over.kind+')');
     const oldT=parseTarget(mv.top,mv.units);
-    if(oldT&&oldT.w!=null&&Math.abs(t.last.top.w)<oldT.w) disputed.push('lower than the number in the file');
+    if(oldT&&oldT.w!=null&&t.last.top.w<signed(t.ex,oldT.w)) disputed.push(isAssisted(t.ex)?'more assistance than the file':'lower than the number in the file');
     const nc=cells.slice();
     if(c.top!==undefined) nc[c.top+1]=' '+newTop+suffix+' ';
     if(c.date!==undefined) nc[c.date+1]=' '+newDate+' ';
@@ -893,10 +901,12 @@ function applyOrderRules(cat,list){
   }
   if(cat==='legs'){ /* Rule 2 — leg extension never first, always behind a compound */
     const iE=list.findIndex(x=>/leg extension/i.test(x.name));
-    const iC=list.findIndex(x=>/squat|press|deadlift|rdl/i.test(x.name));
-    if(iE===0&&list.length>1){
-      const [e]=list.splice(0,1);
-      list.splice(iC>0?iC+1:1,0,e);
+    const isC=x=>/squat|press|deadlift|rdl/i.test(x.name);
+    const iC=list.findIndex(isC);
+    if(iE>-1&&list.length>1&&(iC<0?iE===0:iE<iC)){
+      const [e]=list.splice(iE,1);
+      const j=list.findIndex(isC);           /* re-find: indices shifted */
+      list.splice(j>-1?j+1:1,0,e);
     }
   }
   return list;
@@ -917,7 +927,7 @@ function targetSets(x){
     } else if(t&&t.repList){
       label=(t.repList[i]!==undefined?t.repList[i]:t.repList[t.repList.length-1])+' <small>reps BW</small>';
     } else if(last&&last.vals[i]){
-      label=showW(x.ex,Math.abs(last.vals[i].w))+' <small>× '+last.vals[i].reps+'</small>';
+      label=showW(x.ex,last.vals[i].w)+' <small>× '+last.vals[i].reps+'</small>';
     } else label='<small>no target</small>';
     const lv=last&&last.rows[i];
     sub=lv?showW(x.ex,lv.w)+'×'+lv.reps:'—';
@@ -1002,13 +1012,13 @@ function renderResult(){
   if(!R.down.length&&!R.crash.length) h+='<div class="res"><div class="h">Nothing regressed.</div></div>';
   for(const d of R.down)
     h+='<div class="res down"><div class="h">'+esc(d.name)+' down '+(d.d?Math.abs(d.d)+' lb':Math.abs(d.dr)+' reps')+'</div>'+
-       '<div class="b">'+showW(d.ex,Math.abs(d.now.w))+'×'+d.now.reps+'  was '+showW(d.ex,Math.abs(d.was.w))+'×'+d.was.reps+' on '+fmtD(d.ts)+'</div></div>';
+       '<div class="b">'+showW(d.ex,d.now.w)+'×'+d.now.reps+'  was '+showW(d.ex,d.was.w)+'×'+d.was.reps+' on '+fmtD(d.ts)+'</div></div>';
   for(const c of R.crash)
     h+='<div class="res down"><div class="h">'+esc(c.name)+' — opened too heavy and descended</div>'+
-       '<div class="b">'+c.v.map(x=>showW(c.ex,Math.abs(x.w))+'×'+x.reps).join('  ')+'</div></div>';
+       '<div class="b">'+c.v.map(x=>showW(c.ex,x.w)+'×'+x.reps).join('  ')+'</div></div>';
   for(const u of R.up)
     h+='<div class="res up"><div class="h">'+esc(u.name)+' up '+(u.d?u.d+' lb':'+'+u.dr+' reps')+'</div>'+
-       '<div class="b">'+showW(u.ex,Math.abs(u.now.w))+'×'+u.now.reps+'  was '+showW(u.ex,Math.abs(u.was.w))+'×'+u.was.reps+'</div></div>';
+       '<div class="b">'+showW(u.ex,u.now.w)+'×'+u.now.reps+'  was '+showW(u.ex,u.was.w)+'×'+u.was.reps+'</div></div>';
   const hit=R.tgt.filter(t=>t.hit===true), miss=R.tgt.filter(t=>t.hit===false), na=R.tgt.filter(t=>t.hit===null);
   if(R.tgt.length){
     h+='<h3>Targets</h3>';
@@ -1145,6 +1155,27 @@ function renderRuns(){
 }
 
 /* ================= files ================= */
+/* A session pasted on the day comes back in the next Hevy export with a
+   different timestamp (paste = noon or share time). Carry the day label onto
+   the export's session and drop the pasted copy so it isn't counted twice. */
+async function mergeCSV(rows){
+  const dayK=ts=>{const d=new Date(ts);return d.getFullYear()*1e4+(d.getMonth()+1)*100+d.getDate()};
+  const csvTs=new Map();
+  for(const r of rows){const k=dayK(r.ts); if(!csvTs.has(k)) csvTs.set(k,new Set()); csvTs.get(k).add(r.ts)}
+  const labByTs=new Map(), drop=[];
+  for(const r of SETS) if(r.lab&&r.src==='csv') labByTs.set(r.ts,r.lab);   /* labels already carried */
+  for(const r of SETS){
+    if(!r.lab||r.src==='csv') continue;
+    const same=csvTs.get(dayK(r.ts)); if(!same) continue;                /* not in the export yet */
+    const near=[...same].sort((a,b)=>Math.abs(a-r.ts)-Math.abs(b-r.ts))[0];
+    if(!labByTs.has(near)) labByTs.set(near,r.lab);
+    if(r.ts!==near) drop.push(r.id);
+  }
+  const out=rows.map(r=>{const l=labByTs.get(r.ts); return l?{...r,src:'csv',lab:l}:{...r,src:'csv'}});
+  if(drop.length) await delSets(drop);
+  await putSets(out); SETS=await allSets();
+  return {dropped:drop.length};
+}
 async function handleFile(file,kind){
   const st=document.getElementById('st-'+kind);
   try{
@@ -1152,9 +1183,10 @@ async function handleFile(file,kind){
     if(kind==='csv'){
       const rows=ingestCSV(text);
       const before=new Set(SETS.map(r=>r.id));
-      await putSets(rows); SETS=await allSets();
+      const {dropped}=await mergeCSV(rows);
       const fresh=rows.filter(r=>!before.has(r.id));
-      if(st) st.innerHTML='<span class="ok">'+rows.length.toLocaleString()+' sets read, '+fresh.length+' new</span>';
+      if(st) st.innerHTML='<span class="ok">'+rows.length.toLocaleString()+' sets read, '+fresh.length+' new'+
+        (dropped?', '+dropped+' pasted sets replaced':'')+'</span>';
       if(fresh.length){ LASTRESULT=evaluateSession(Math.max(...fresh.map(r=>r.ts))); }
     } else if(kind==='strava'){
       const runs=ingestStrava(text); await putRuns(runs); RUNS=await allRuns();
@@ -1232,7 +1264,7 @@ function renderPreview(){
 }
 async function commitPasted(){
   if(!PENDING) return;
-  const P=PENDING, rows=P.rows.map(r=>({...r,lab:P.lab}));
+  const P=PENDING, rows=P.rows.map(r=>({...r,lab:P.lab,src:'paste'}));
   await putSets(rows); SETS=await allSets();
   LASTRESULT=evaluateSession(P.ts);
   LASTRESULT.notes=P.exercises.filter(e=>e.note);
@@ -1269,7 +1301,7 @@ async function loadFromRepo(){
   try{
     const r=await fetch('./data/hevy_export.csv',{cache:'no-cache'});
     if(r.ok){ reached=true; const t=await r.text(), s=sig(t);
-      if(s!==REPO.csvSig){ await putSets(ingestCSV(t)); SETS=await allSets();
+      if(s!==REPO.csvSig){ await mergeCSV(ingestCSV(t));
         REPO.csvSig=s; REPO.importedAt=Date.now(); changed=true; } }
   }catch(e){}
   try{
