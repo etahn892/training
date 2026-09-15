@@ -1,6 +1,6 @@
 /* Bump CACHE whenever index.html, the manifest, or an icon changes.
    Files under ./data/ are network-first and need no bump. */
-const CACHE = 'training-v6';
+const CACHE = 'training-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 
