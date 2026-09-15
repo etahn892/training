@@ -1370,16 +1370,20 @@ function ghErr(code){
   if(code===403||code===404) return 'That key can\'t write to '+GH.repo+'. Check the repo name and that the key has Contents: Read and write.';
   return 'GitHub error '+code+'. Will try again next time you open the app.';
 }
+async function net(url,opt){
+  try{ return await fetch(url,opt) }
+  catch(e){ throw new Error('Couldn\'t reach GitHub ('+(e&&e.message||e)+'). Check your internet, and turn off any ad blocker or VPN for this app.') }
+}
 async function ghPut(path,text,msg){
   const url='https://api.github.com/repos/'+GH.repo+'/contents/'+path;
   const hd={'Authorization':'Bearer '+GH.token,'Accept':'application/vnd.github+json'};
   for(let tries=0;tries<2;tries++){
-    const g=await fetch(url,{headers:hd,cache:'no-store'});
+    const g=await net(url+'?t='+Date.now(),{headers:hd});
     let sha=null;
     if(g.ok) sha=(await g.json()).sha;
     else if(g.status!==404) throw new Error(ghErr(g.status));
     const body={message:msg,content:b64(text)}; if(sha) body.sha=sha;
-    const r=await fetch(url,{method:'PUT',headers:hd,body:JSON.stringify(body)});
+    const r=await net(url,{method:'PUT',headers:hd,body:JSON.stringify(body)});
     if(r.ok) return;
     if(r.status!==409&&r.status!==422) throw new Error(ghErr(r.status));   /* 409/422: file changed, retry */
   }
@@ -1401,7 +1405,7 @@ async function syncPasted(){
     return true;
   }catch(e){
     await kvSet('ghDirty',true);
-    GHSTAT=e.message||'Couldn\'t reach GitHub. Will try again next time you open the app.';
+    GHSTAT=(e&&e.message)||String(e);
     return false;
   }
 }
@@ -1419,7 +1423,7 @@ async function renderGH(){
 }
 async function connectGH(){
   const repo=document.getElementById('ghrepo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,'');
-  const token=document.getElementById('ghtoken').value.trim() || (GH&&GH.token) || '';
+  const token=document.getElementById('ghtoken').value.replace(/[^\x21-\x7E]/g,'') || (GH&&GH.token) || '';   /* drop hidden characters picked up when copying */
   const st=document.getElementById('ghstat');
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ st.innerHTML='<span class="bad">Repo should look like owner/repo.</span>'; return }
   if(!token){ st.innerHTML='<span class="bad">Paste your GitHub key first.</span>'; return }
